@@ -140,7 +140,7 @@ function evolutionChoices(mon){let base=branches[mon.type]||branches[0];return [
 const key='tamago_game_v1';let state;try{state=JSON.parse(localStorage.getItem(key))}catch(e){}
 if(!state||!state.records)state={total:0,completed:0,abandoned:0,injured:0,records:{},current:null};
 if(!Array.isArray(state.roster))state.roster=[];if(!Array.isArray(state.team))state.team=[];
-// Ver.3.5.4: 既存セーブを維持しながらマスター情報を追加
+// Ver.3.5.5: 既存セーブを維持しながらマスター情報を追加
 if(!state.master||typeof state.master!=='object'||Array.isArray(state.master))state.master={};
 if(typeof state.master.name!=='string')state.master.name='ななしのマスター';
 if(!state.master.inventory||typeof state.master.inventory!=='object'||Array.isArray(state.master.inventory))state.master.inventory={};
@@ -293,6 +293,26 @@ let moves=availableMoves(m);let chosen=new Set([...document.querySelectorAll('#m
 $('move-options').innerHTML=moves.map((v,i)=>'<label class="move-option"><input type="checkbox" value="'+v.id+'" '+(chosen.size?chosen.has(v.id):i<3?'checked':'')+'><span><b>'+v.name+'</b>　MP '+v.mp+'<small>'+v.desc+(v.exclusive?'【種族専用】':'')+'</small></span></label>').join('');
 $('move-options').querySelectorAll('input').forEach(el=>el.onchange=()=>{let count=$('move-options').querySelectorAll('input:checked').length;if(count>3){el.checked=false;alert('特技は3つまでです。')}});$('save-monster').onclick=saveCompleted}
 function sameSpeciesTeam(){let pair=state.team.map(id=>state.roster.find(x=>x.id===id));return pair.length===2&&pair.every(Boolean)&&pair[0].name===pair[1].name}
+// Ver.3.5.5: 牧場から個体を1匹ずつ放牧（進化時の同種族制限は未導入）
+function releaseFromFarm(id){
+ const mon=state.roster.find(v=>v.id===id);
+ if(!mon)return;
+ const inTeam=state.team.includes(id);
+ const label='第'+mon.id+'号 '+(mon.nickname||mon.name)+(mon.nickname?'（'+mon.name+'）':'');
+ const detail=keys.map((k,i)=>k+' '+(mon.stats?.[i]??0)).join(' ／ ');
+ const message=label+'を牧場から放牧しますか？\n'+detail+'\n戦闘 '+(Number(mon.battles)||0)+'戦 ／ 勝利 '+(Number(mon.wins)||0)+'勝'+(inTeam?'\n※現在チームに編成されています。放牧するとチームからも外れます。':'')+'\n\n放牧した個体は元に戻せません。\n※育成・ランキングの過去記録は残ります。';
+ if(!confirm(message))return;
+ // 保存に失敗した場合、画面上の牧場データも元に戻す。
+ const oldRoster=state.roster,oldTeam=state.team,oldAbandoned=state.abandoned;
+ state.roster=oldRoster.filter(v=>v.id!==id);
+ state.team=oldTeam.filter(v=>v!==id);
+ state.abandoned=(Number(oldAbandoned)||0)+1;
+ state.current=m;
+ try{localStorage.setItem(key,JSON.stringify(state))}
+ catch(e){state.roster=oldRoster;state.team=oldTeam;state.abandoned=oldAbandoned;alert('保存に失敗したため、放牧は取り消しました。');return}
+ render();
+ alert(label+'を放牧しました。');
+}
 function renderRoster(){state.team=state.team.filter(id=>state.roster.some(v=>v.id===id)).slice(0,2);
 $('team-info').textContent='保存 '+state.roster.length+'匹 ／ チーム '+state.team.length+'/2匹（左：前衛／右：後衛）';
 $('team-summary').textContent='保存 '+state.roster.length+'匹 ／ チーム '+state.team.length+'/2匹'+(sameSpeciesTeam()?' ⚠️ 同種族のため対戦不可':'');
@@ -318,7 +338,9 @@ let b=document.createElement('button');b.style.marginTop='5px';b.style.width='10
  const chosen=valid.find(v=>String(v.i+1)===input.trim());
  if(!chosen){alert('表示された番号を入力してください。');return}
  state.team[chosen.i]=mon.id;
- }else{if(state.team.some(id=>{let selected=state.roster.find(x=>x.id===id);return selected&&selected.name===mon.name})){alert('同じ種族のモンスターは2匹同時にチームに入れられません。\n別の種族を選んでください。');return}state.team.push(mon.id)}save();render()};box.appendChild(b);$('roster').appendChild(box)})}
+ }else{if(state.team.some(id=>{let selected=state.roster.find(x=>x.id===id);return selected&&selected.name===mon.name})){alert('同じ種族のモンスターは2匹同時にチームに入れられません。\n別の種族を選んでください。');return}state.team.push(mon.id)}save();render()};box.appendChild(b);
+let release=document.createElement('button');release.textContent='🌿 このモンスターを放牧';release.className='risk';release.style.width='100%';release.style.marginTop='5px';release.onclick=()=>releaseFromFarm(mon.id);box.appendChild(release);
+$('roster').appendChild(box)})}
 
 function button(label,fn,cls=''){let b=document.createElement('button');b.textContent=label;b.className=cls;b.addEventListener('click',fn);$('buttons').appendChild(b)}
 function render(){
