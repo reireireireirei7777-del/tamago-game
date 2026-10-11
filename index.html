@@ -5,8 +5,17 @@
 #farm-screen .farm-tools{display:flex;gap:6px;margin:9px 0 5px}#farm-search{min-width:0;flex:1}#farm-sort{width:132px}#farm-search,#farm-sort{height:38px;border:2px solid #405b44;border-radius:7px;background:#f5f8ec;color:#253d2e;padding:5px;font-size:12px}#farm-screen[hidden]{display:none!important}#farm-screen{position:fixed;inset:0;z-index:110;background:#dce6d4;overflow-y:auto;padding:env(safe-area-inset-top) 9px env(safe-area-inset-bottom)}#farm-screen .farm-shell{max-width:450px;margin:0 auto;padding:9px 2px 30px}body.in-farm{overflow:hidden}#battle-screen[hidden]{display:none!important}#battle-screen{position:fixed;inset:0;z-index:100;background:#dce6d4;overflow-y:auto;overscroll-behavior:contain;padding:env(safe-area-inset-top) 8px env(safe-area-inset-bottom)}body.in-battle{overflow:hidden}.battle-shell{max-width:450px;margin:0 auto;padding:9px 4px 25px}.battle-shell h2{font-size:16px}.battle-shell #battle-back{min-height:32px;padding:4px 9px;font-size:12px}.battle-shell .battle-grid{gap:8px!important}.battle-shell .fighter{text-align:center;min-height:135px}.battle-shell .fighter canvas{display:block;width:76px;height:76px;margin:3px auto;image-rendering:pixelated;background:#b4c99f;border-radius:5px}.battle-shell .fighter.ko canvas{filter:grayscale(1)}.battle-shell .battle-log{max-height:150px!important}.battle-shell .battle-actions{margin:5px 0}.battle-shell .mini{margin-top:6px}
 #battle-ui .fighter.targetable{cursor:pointer;outline:3px solid #b16d27;outline-offset:-3px;background:#fff0c4!important;animation:targetpulse 1s infinite alternate}#battle-ui .fighter.targetable canvas{box-shadow:0 0 0 3px #b16d27}#battle-ui .target-hint{font-size:12px;font-weight:bold;background:#fff0c4;padding:7px;border-radius:6px}@keyframes targetpulse{to{background:#ffe1a1}}
 #battle-ui .fighter{position:relative;overflow:visible;transition:background .2s}#battle-ui .fighter .bar i{transition:width .4s ease-out,background .2s}#battle-ui .fighter .bar i.low-hp{background:#c54c42!important}#battle-ui .effect-layer{position:absolute;left:0;right:0;top:33px;height:78px;pointer-events:none;z-index:5}#battle-ui .float-number{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:25px;font-weight:900;letter-spacing:-1px;text-shadow:1px 2px #fff,-1px -1px #fff,2px 0 #fff;animation:floatup .72s ease-out both}#battle-ui .float-number.damage{color:#dc3333}#battle-ui .float-number.heal{color:#168b3e}#battle-ui .float-number.miss{color:#4d5d7d;font-size:20px}#battle-ui .float-number.critical{font-size:32px}#battle-ui .crit-badge{position:absolute;left:0;right:0;top:-18px;color:#d53a26;font-size:14px;font-weight:bold;text-shadow:1px 1px white;animation:floatup .7s both}#battle-ui .fighter.acting{box-shadow:0 0 0 3px #f4c74d,0 0 13px #f4c74d}#battle-ui .fighter.hit canvas{animation:hitshake .36s linear}#battle-ui .fighter.dodging canvas{animation:dodge .48s ease-out}#battle-ui .fighter.healing canvas{filter:drop-shadow(0 0 8px #30b65d)}#battle-ui .fighter.falling canvas{animation:fall .55s ease-in both}#battle-ui .ko-label{font-size:10px;color:#8e3d3d;font-weight:bold}#battle-ui .fighter.ko{opacity:.65}@keyframes floatup{0%{opacity:0;transform:translateY(18px) scale(.8)}20%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(-22px) scale(1.08)}}@keyframes hitshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}@keyframes dodge{40%{transform:translateX(17px);opacity:.45}100%{transform:translateX(0);opacity:1}}@keyframes fall{0%{opacity:1;transform:translateY(0)}50%{opacity:.3}100%{opacity:0;transform:translateY(20px)}}
+
+/* 育成数限定の特殊進化：孵化時の予兆演出 */
+.hatch-omen{margin-top:7px;padding:10px 8px;text-align:center;border:2px solid #aa80c8;border-radius:9px;background:linear-gradient(115deg,#f4eaff,#fff6d8,#f4eaff);color:#65417d;font-size:13px;font-weight:bold;white-space:pre-line}
+.hatch-omen[hidden]{display:none!important}
+.hatch-omen.appear{animation:omen-appear .65s ease-out,omen-glow 1.3s ease-in-out 2 alternate}
+.lcd.omen-glow{animation:omen-glow 1.3s ease-in-out 2 alternate}
+@keyframes omen-appear{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+@keyframes omen-glow{from{box-shadow:0 0 0 #bd8bde}to{box-shadow:0 0 18px 5px #bd8bde}}
+@media(prefers-reduced-motion:reduce){.hatch-omen.appear,.lcd.omen-glow{animation:none}}
 </style></head><body><main><h1>🥚 たまご育成 <span class="badge">Ver.3.2</span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
-<section class="card"><div class="row"><strong id="name">はじめての卵</strong><span id="day" class="badge">待機中</span></div><div class="lcd"><canvas id="sprite" width="160" height="120"></canvas></div><div class="row" style="margin-top:9px"><span id="status">卵を孵化させよう</span><span id="count" class="badge"></span></div></section>
+<section class="card"><div class="row"><strong id="name">はじめての卵</strong><span id="day" class="badge">待機中</span></div><div class="lcd"><canvas id="sprite" width="160" height="120"></canvas></div><div class="row" style="margin-top:9px"><span id="status">卵を孵化させよう</span><span id="count" class="badge"></span></div><div id="hatch-omen" class="hatch-omen" hidden aria-live="polite"></div></section>
 <section class="card stats-card"><h2>能力値</h2><div id="stats" class="stats"></div></section>
 <section class="card comment-card"><h2>育成コメント</h2><div id="comment" class="comment" aria-live="polite">卵を孵化させよう！</div></section>
 <section class="card"><h2>育成コマンド</h2><div id="buttons" class="buttons"></div><p class="note hint">自由行動：6能力のうち1つと上昇量がランダム。猛特訓：防御を含む全能力上昇、失敗すると即育成終了。</p></section>
@@ -93,7 +102,26 @@ if(state.current)migrateStats(state.current.stats);
 Object.values(state.records||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>{migrateStats(e.stats);e.sum=e.stats.reduce((a,b)=>a+b,0)})});
 let m=state.current;if(m&&m.phase==='done'&&!state.roster.some(v=>v.id===m.id)){m.phase='moves';m.logs.unshift('旧版の完成個体です。特技を選んで牧場へ保存できます。')}const random=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 function save(){state.current=m;try{localStorage.setItem(key,JSON.stringify(state))}catch(e){alert('保存に失敗しました。')}}
-function start(){let type=random(0,2);state.total++;m={id:state.total,type,name:species[type][0],stats:[...species[type][1]],day:1,hard:0,hardSuccess:0,actionCounts:{},phase:'grow',logs:['第'+state.total+'号 '+species[type][0]+'が誕生！']};save();render()}
+// 既存の進化条件と同じ「個体番号」で判定する（100の倍数／11・22・111などのゾロ目）。
+function hasMilestoneEvolution(id){
+ return id%100===0||(id>=11&&/^([1-9])\\1+$/.test(String(id)));
+}
+function showHatchOmen(){
+ const el=$('hatch-omen');
+ const visible=!!(m&&m.phase==='grow'&&m.day===1&&hasMilestoneEvolution(m.id));
+ el.hidden=!visible;
+ el.textContent=visible?'……ん？\\n何やら不思議な波動を感じる……':'';
+ return visible;
+}
+function animateHatchOmen(){
+ const el=$('hatch-omen'),lcd=document.querySelector('.lcd');
+ if(el.hidden)return;
+ el.classList.remove('appear');lcd.classList.remove('omen-glow');
+ void el.offsetWidth;
+ el.classList.add('appear');lcd.classList.add('omen-glow');
+ setTimeout(()=>{el.classList.remove('appear');lcd.classList.remove('omen-glow')},2800);
+}
+function start(){let type=random(0,2);state.total++;m={id:state.total,type,name:species[type][0],stats:[...species[type][1]],day:1,hard:0,hardSuccess:0,actionCounts:{},phase:'grow',logs:['第'+state.total+'号 '+species[type][0]+'が誕生！']};save();render();animateHatchOmen()}
 function finish(hurt){m.phase='evolve';if(hurt)state.injured++;else state.completed++;m.logs.unshift(hurt?'怪我！ 育成打ち切り。':'7日間の育成が完了！');save();render()}
 function abandon(){if(!m||!['grow','evolve','moves'].includes(m.phase))return;if(confirm('第'+m.id+'号 '+m.name+'を放牧しますか？\n牧場には保存されず、この個体には戻れません。')){state.abandoned++;start()}}
 function action(a){if(!m||m.phase!=='grow')return;
@@ -193,7 +221,7 @@ let b=document.createElement('button');b.style.marginTop='5px';b.style.width='10
 function button(label,fn,cls=''){let b=document.createElement('button');b.textContent=label;b.className=cls;b.addEventListener('click',fn);$('buttons').appendChild(b)}
 function render(){
 $('name').textContent=m?m.name:'はじめての卵';$('day').textContent=!m?'待機中':m.phase==='grow'?m.day+'/7日目':m.phase==='evolve'?'進化選択':m.phase==='moves'?'特技選択':'育成完了';$('count').textContent='累計 '+state.total+'匹';
-$('status').textContent=!m?'卵を孵化させよう':m.phase==='grow'?'今日の行動を選ぼう':m.phase==='evolve'?'進化先を選択':m.phase==='moves'?'特技を3つ選ぼう':'完成！';
+showHatchOmen();$('status').textContent=!m?'卵を孵化させよう':m.phase==='grow'?'今日の行動を選ぼう':m.phase==='evolve'?'進化先を選択':m.phase==='moves'?'特技を3つ選ぼう':'完成！';
 $('stats').innerHTML=keys.map((k,i)=>'<div class="stat">'+k+' <b>'+(m?m.stats[i]:'―')+'</b></div>').join('')+'<div class="stat">合計 <b>'+(m?m.stats.reduce((a,b)=>a+b,0):'―')+'</b></div>';
 $('buttons').replaceChildren();
 if(!m||m.phase==='done'){button('🥚 新しい卵を孵化',start,'primary');if(m)button('完成個体を見る',()=>alert(m.name+'\n'+keys.map((k,i)=>k+'：'+m.stats[i]).join('\n')))}
