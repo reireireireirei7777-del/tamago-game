@@ -104,13 +104,13 @@ let m=state.current;if(m&&m.phase==='done'&&!state.roster.some(v=>v.id===m.id)){
 function save(){state.current=m;try{localStorage.setItem(key,JSON.stringify(state))}catch(e){alert('保存に失敗しました。')}}
 // 既存の進化条件と同じ「個体番号」で判定する（100の倍数／11・22・111などのゾロ目）。
 function hasMilestoneEvolution(id){
- return id%100===0||(id>=11&&/^([1-9])\\1+$/.test(String(id)));
+ return id%100===0||(id>=11&&/^([1-9])\1+$/.test(String(id)));
 }
 function showHatchOmen(){
  const el=$('hatch-omen');
  const visible=!!(m&&m.phase==='grow'&&m.day===1&&hasMilestoneEvolution(m.id));
  el.hidden=!visible;
- el.textContent=visible?'……ん？\\n何やら不思議な波動を感じる……':'';
+ el.textContent=visible?'……ん？\n何やら不思議な波動を感じる……':'';
  return visible;
 }
 function animateHatchOmen(){
