@@ -65,11 +65,13 @@ main.registration-locked > section.card:has(#open-farm),
 main.registration-locked > section.card:has(#open-dex),
 main.registration-locked > section.card:has(#open-master),
 main.registration-locked > section.card:has(#open-battle),
+main.registration-locked > section.card:has(#open-quests),
 main.registration-locked > section.card:has(#backup){opacity:.42}
 main.registration-locked > section.card:has(#open-farm) button,
 main.registration-locked > section.card:has(#open-dex) button,
 main.registration-locked > section.card:has(#open-master) button,
 main.registration-locked > section.card:has(#open-battle) button,
+main.registration-locked > section.card:has(#open-quests) button,
 main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 #quest-screen[hidden]{display:none!important}#quest-screen{position:fixed;inset:0;z-index:116;background:#e9efe6;overflow-y:auto;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)}#quest-screen .quest-shell{max-width:470px;margin:auto;padding:12px 2px 35px}body.in-quest{overflow:hidden}.quest-entry{background:white;border:1px solid #bacbb6;border-radius:12px;margin:10px 0;padding:12px}.quest-entry h3{margin:0 0 7px}.quest-entry p{margin:5px 0}.quest-entry button{margin-top:7px}.quest-entry.done{opacity:.68}.quest-choice{display:flex;gap:6px;align-items:center;margin:8px 0}.quest-choice select{flex:1;min-width:0;padding:8px}.quest-status{background:#f1f6ef;border-radius:8px;padding:8px;margin:8px 0}.quest-boss-state{font-weight:bold;color:#a04318}body.in-quest #quest-screen{display:block}
 
@@ -100,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.0.6';
+const APP_VERSION='Ver.4.0.7';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -1174,9 +1176,9 @@ function questGenerate(day){let seed=Number(day.replace(/-/g,''))>>>0;let r=ques
 }
 function questSave(){try{localStorage.setItem(questKey,JSON.stringify(questData))}catch(e){console.warn('クエスト保存失敗',e)}}
 function questRefresh(){const today=questDay();if(questData.day!==today){questData.day=today;questData.quests=questGenerate(today);questSave()}}
-function initQuests(){try{questData=JSON.parse(localStorage.getItem(questKey)||'null')}catch(e){}if(!questData||!Array.isArray(questData.quests))questData={day:'',quests:[],clears:[0,0,0,0,0],title:'',run:null};if(!Array.isArray(questData.clears))questData.clears=[0,0,0,0,0];questRun=questData.run||null;if(questRun&&(!Array.isArray(questRun.partyIds)||questRun.partyIds.length!==2||!Number.isInteger(questRun.stage)||questRun.stage<0||questRun.stage>2)){console.warn('不正なクエスト進行を検出');questRun=null;questData.run=null;questSave()}questRefresh();$('open-quests').onclick=()=>{if(breedingRegistrationPending())return;openQuestScreen()};$('quest-back').onclick=()=>{closeQuestScreen()};renderQuestSummary()}
+function initQuests(){try{questData=JSON.parse(localStorage.getItem(questKey)||'null')}catch(e){}if(!questData||!Array.isArray(questData.quests))questData={day:'',quests:[],clears:[0,0,0,0,0],title:'',run:null};if(!Array.isArray(questData.clears))questData.clears=[0,0,0,0,0];questRun=questData.run||null;if(questRun&&(!Array.isArray(questRun.partyIds)||questRun.partyIds.length!==2||!Number.isInteger(questRun.stage)||questRun.stage<0||questRun.stage>2)){console.warn('不正なクエスト進行を検出');questRun=null;questData.run=null;questSave()}questRefresh();$('quest-back').onclick=()=>{closeQuestScreen()};renderQuestSummary()}
 function renderQuestSummary(){const el=$('quest-summary');if(el)el.textContent='本日のクリア '+questData.quests.filter(q=>q.done).length+'/5'+(questRun?' ／ 進行中のクエストあり':'')}
-function openQuestScreen(){if(breedingRegistrationPending())return;questRefresh();$('quest-screen').hidden=false;document.body.classList.add('in-quest');renderQuests();$('quest-screen').scrollTop=0}
+function openQuestScreen(){if(breedingRegistrationPending()){syncRegistrationLock();return}questRefresh();$('quest-screen').hidden=false;document.body.classList.add('in-quest');renderQuests();$('quest-screen').scrollTop=0}
 function closeQuestScreen(){$('quest-screen').hidden=true;document.body.classList.remove('in-quest')}
 function questButton(parent,text,fn){let b=document.createElement('button');b.textContent=text;b.onclick=fn;parent.appendChild(b);return b}
 function renderQuests(){questRefresh();$('quest-abort').hidden=!questRun;let box=$('quest-list');box.replaceChildren();$('quest-party').hidden=true;renderQuestSummary();if(questRun){let div=document.createElement('div');div.className='quest-entry';div.textContent='⚔️ 進行中：'+questRun.title+'　'+(questRun.stage+1)+'/3戦目';questButton(div,'▶ クエストの戦闘を再開',()=>{closeQuestScreen();if(battle&&battleMode==='quest'){openBattle()}else questStartStage()});box.appendChild(div);return}
@@ -1201,6 +1203,8 @@ function abortQuest(){
  try{localStorage.removeItem(battleKey)}catch(e){console.warn(e)}
  questSave();closeBattle();closeQuestScreen();renderQuestSummary();render();alert('クエストを中断しました。育成画面に戻りました。');
 }
+// Ver.4.0.7: クエスト入口にも育成中の操作制限を適用する。
+$('open-quests').onclick=()=>{if(breedingRegistrationPending()){syncRegistrationLock();return}openQuestScreen()};
 $('quest-abort').onclick=abortQuest;$('battle-emergency-abort').onclick=abortQuest;
 function questEnd(win){battleSequence++;battle=null;storeBattle();questRun=null;questData.run=null;questSave();closeBattle();openQuestScreen();if(win)alert('🏆 クエストクリア！ マスターの実績に記録しました。');renderQuestSummary();renderMaster()}
 function renderQuestMaster(){const el=$('quest-master-stats');if(!el||!questData)return;el.replaceChildren();let total=questData.clears.reduce((a,b)=>a+(Number(b)||0),0);let p=document.createElement('p');p.textContent='総クリア '+total+'回 ／ '+questData.clears.map((n,i)=>'★'+(i+1)+'：'+(Number(n)||0)+'回').join('　');el.appendChild(p);let available=questTitleRules.filter(t=>(t.star?questData.clears[t.star-1]:total)>=t.need);let label=document.createElement('label');label.textContent='表示する称号：';let select=document.createElement('select');let empty=document.createElement('option');empty.value='';empty.textContent='称号なし';select.appendChild(empty);available.forEach(t=>{let o=document.createElement('option');o.value=t.id;o.textContent=t.name;select.appendChild(o)});if(!available.some(t=>t.id===questData.title))questData.title='';select.value=questData.title||'';select.onchange=()=>{questData.title=select.value;questSave()};label.appendChild(select);el.appendChild(label);let note=document.createElement('p');note.className='note';note.textContent='称号の獲得条件：'+questTitleRules.map(t=>t.name+'（'+(t.star?'★'+t.star:'総計')+t.need+'回）').join(' ／ ');el.appendChild(note)}
