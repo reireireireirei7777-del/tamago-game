@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.1.0';
+const APP_VERSION='Ver.4.1.1';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -947,8 +947,8 @@ function priority(cmd){
  return 0;
 }
 function cpuCommand(f){
- if(f.speciesName==='じどうはんばいき'){const enemies=alive('味方');return {f,cmd:'poisonjuice',target:enemies[0]?.i??0}}
- let friends=alive('敵'),foes=alive('味方');if(!foes.length)return {f,cmd:'guard',target:f.i};
+ if(f.speciesName==='じどうはんばいき'){const enemies=alive(f.side==='敵'?'味方':'敵');return {f,cmd:'poisonjuice',target:enemies[0]?.i??0}}
+ let friends=alive(f.side),foes=alive(f.side==='敵'?'味方':'敵');if(!foes.length)return {f,cmd:'guard',target:f.i};
  let stage=battleMode==='arena'?arenaWins+1:0;
  let skillRate=battleMode==='arena'?Math.min(.85,.15+Math.floor((stage-1)/10)*.15):.72;
  if(f.boss)skillRate=Math.min(.95,skillRate+.18);
@@ -984,7 +984,7 @@ battle.all.forEach(x=>{x.shield=false;x.cover=false;x.counter=false});
 battle.turn++;battle.queue=[];battle.phase='choose';bLog('―― '+battle.turn+'ターン目 ――');
 }
 function recordMatchResult(){
- if(!battle||!battle.resultKey||battleMode==='friend')return;
+ if(!battle||!battle.resultKey||battleMode==='friend'||battleMode==='training')return;
  state.matchResultIds=Array.isArray(state.matchResultIds)?state.matchResultIds:[];
  if(state.matchResultIds.includes(battle.resultKey))return;
  const won=battle.result==='勝利！';
@@ -1111,7 +1111,54 @@ let f=nextChooser();if(!f)return;
 pendingTarget=null;
 battle.queue.push({f,cmd,target});if(battle.queue.length===requiredActions())runTurn();else{storeBattle();renderBattle()}}
 function targetMode(cmd,side){pendingTarget={cmd,side};renderBattle()}
-// Ver.4.1.0: 友達対戦。共有コードに牧場・育成履歴・個人情報を含めない。
+function autoQueueTurn(){
+ if(!battle||battle.phase!=='choose'||!battle.spectator)return;
+ const allies=alive('味方');if(!allies.length)return;
+ battle.queue=[];
+ for(const f of allies){const count=f.speciesName==='ゴールドキメラ'?2:1;for(let i=0;i<count;i++)battle.queue.push(cpuCommand(f))}
+ runTurn();
+}
+let spectatorTimer=null;
+function stopSpectatorTimer(){if(spectatorTimer!==null){clearTimeout(spectatorTimer);spectatorTimer=null}}
+function scheduleSpectatorTurn(){
+ stopSpectatorTimer();if(!battle||!battle.spectator||!battle.autoSpectate||battle.phase!=='choose')return;
+ const current=battle;
+ spectatorTimer=setTimeout(()=>{spectatorTimer=null;if(battle===current&&battle.phase==='choose'&&battle.autoSpectate)autoQueueTurn()},950);
+}
+function startTraining(enemyIds,spectator){
+ if(questRun){alert('クエスト進行中は訓練できません。');return}
+ if(breedingRegistrationPending()){alert('育成・登録を完了してから訓練してください。');return}
+ if(battle&&battle.phase!=='end'){alert('進行中の対戦を終了してください。');return}
+ if(state.team.length!==2||sameSpeciesTeam()){alert('操作チームを異なる種族の2匹で編成してください。');return}
+ if(enemyIds.length!==2||enemyIds[0]===enemyIds[1]){alert('訓練相手を2匹選択してください。');return}
+ const ours=state.team.map(id=>state.roster.find(x=>x.id===id));
+ const enemies=enemyIds.map(id=>state.roster.find(x=>x.id===id));
+ if([...ours,...enemies].some(x=>!x)){alert('モンスターが見つかりません。');return}
+ const party=ours.map((m,i)=>mkF(m,'味方',i));const foes=enemies.map((m,i)=>mkF(m,'敵',i));
+ initRareBattle(party,enemies);
+ battleMode='training';arenaWins=0;arenaParty=null;
+ battle={resultKey:'training-'+Date.now(),all:[...party,...foes],turn:1,queue:[],phase:'choose',logs:['🏋️ 訓練開始！','訓練の勝敗は育成記録に反映されません。'],result:null,spectator:!!spectator,autoSpectate:false};
+ openBattle();storeBattle();
+}
+function renderTrainingMenu(box,add,btn){
+ const section=add('section','',box,'card');add('h3','🏋️ 訓練',section);
+ add('p','自分のチーム2匹と、牧場から選んだ2匹で対戦。同じ個体を両チームに選択できます。報酬・記録なし。',section,'note');
+ if(state.roster.length<2){add('p','牧場に2匹以上保存すると訓練できます。',section,'note');return}
+ const options=state.roster.map(m=>({id:m.id,label:m.name+'（'+m.speciesName+'）'}));
+ const selectors=[];
+ for(let i=0;i<2;i++){
+  add('p',i===0?'CPU前衛':'CPU後衛',section,'mini');
+  const sel=document.createElement('select');sel.style.width='100%';sel.style.padding='10px';sel.style.marginBottom='10px';
+  for(const item of options){const op=document.createElement('option');op.value=String(item.id);op.textContent=item.label;sel.appendChild(op)}
+  if(options[i])sel.value=String(options[i].id);section.appendChild(sel);selectors.push(sel);
+ }
+ const mode=add('select','',section);mode.style.width='100%';mode.style.padding='10px';mode.style.margin='8px 0 12px';
+ for(const [value,label] of [['manual','⚔️ 指揮モード（自分で操作）'],['watch','👀 観戦モード（CPU対CPU）']]){const op=document.createElement('option');op.value=value;op.textContent=label;mode.appendChild(op)}
+ const start=btn('🏋️ 訓練を開始',()=>startTraining(selectors.map(sel=>Number(sel.value)),mode.value==='watch'),section);
+ start.className='full primary';start.disabled=state.team.length!==2||sameSpeciesTeam();
+}
+
+// Ver.4.1.1: 友達対戦。共有コードに牧場・育成履歴・個人情報を含めない。
 let friendLastPair=null;
 const FRIEND_PREFIX='TAMAGO-FRIEND-1:';
 function friendEncode(pair){const bytes=new TextEncoder().encode(JSON.stringify({v:1,pair}));let bin='';for(const b of bytes)bin+=String.fromCharCode(b);return FRIEND_PREFIX+btoa(bin)}
@@ -1132,7 +1179,7 @@ function friendExportPair(){
  const pair=state.team.map(id=>state.roster.find(x=>x.id===id));if(pair.some(x=>!x))throw Error('チームを編成し直してください。');
  return pair.map((mon,i)=>{const f=mkF(mon,'味方',i);return {name:String(f.name).slice(0,60),speciesName:String(f.speciesName).slice(0,60),type:f.type,stats:[...f.stats],moves:[...f.moves]};});
 }
-function startFriendBattle(pair){
+function startFriendBattle(pair,spectator=false){
  if(questRun){alert('クエスト進行中は友達対戦を開始できません。');return}
  if(breedingRegistrationPending()){alert('育成・登録を完了してから対戦してください。');return}
  if(state.team.length!==2||sameSpeciesTeam()){alert('牧場で異なる種族の2匹をチーム編成してください。');return}
@@ -1145,7 +1192,7 @@ function startFriendBattle(pair){
   initRareBattle(party,enemy);
   for(const f of party){if(f.speciesName!=='ひよこキング')continue;const mate=party.find(x=>x!==f);if(mate&&!mate.chickBuff){mate.stats=mate.stats.map(v=>Math.round(v*1.1));mate.maxHp=mate.stats[0];mate.maxMp=mate.stats[1];mate.hp=Math.min(mate.maxHp,Math.round(mate.hp*1.1));mate.mp=Math.min(mate.maxMp,Math.round(mate.mp*1.1));mate.chickBuff=true}}
   friendLastPair=pair.map(m=>({...m,stats:[...m.stats],moves:[...m.moves]}));battleMode='friend';arenaWins=0;arenaParty=null;
-  battle={resultKey:'friend-'+Date.now(),all:[...party,...foes],turn:1,queue:[],phase:'choose',logs:['🤝 友達のペアが現れた！','報酬・育成記録の加算はありません。'],result:null};
+  battle={resultKey:'friend-'+Date.now(),all:[...party,...foes],turn:1,queue:[],phase:'choose',logs:['🤝 友達のペアが現れた！','報酬・育成記録の加算はありません。'],result:null,spectator:!!spectator,autoSpectate:false};
   openBattle();storeBattle();
  }catch(err){console.error('友達対戦開始エラー',err);alert('友達対戦を開始できません：'+err.message)}
 }
@@ -1157,20 +1204,28 @@ function renderFriendMenu(box,add,btn){
  const output=document.createElement('textarea');output.rows=4;output.readOnly=true;output.hidden=true;output.style.width='100%';output.setAttribute('aria-label','発行した友達対戦コード');section.appendChild(output);
  const copyBtn=btn('📋 発行したコードをコピー',async()=>{try{await navigator.clipboard.writeText(output.value);alert('コピーしました。LINEなどで送ってください。')}catch(e){output.focus();output.select();alert('コードを選択しました。コピーして送ってください。')}},section);copyBtn.hidden=true;copyBtn.className='full';
  add('p','友達から届いた対戦コードを貼り付け：',section,'note');const input=document.createElement('textarea');input.rows=3;input.style.width='100%';input.placeholder='TAMAGO-FRIEND-1:...';input.setAttribute('aria-label','受け取った友達対戦コード');section.appendChild(input);
- const start=btn('⚔️ 友達のペアに挑戦',()=>{try{startFriendBattle(friendDecode(input.value))}catch(err){alert(err.message)}},section);start.className='full primary';start.disabled=state.team.length!==2||sameSpeciesTeam();
+ const watch=add('label','👀 観戦モード（自分のペアもCPU操作）',section,'note');const watchCheck=document.createElement('input');watchCheck.type='checkbox';watchCheck.style.marginRight='8px';watch.prepend(watchCheck);
+ const start=btn('⚔️ 友達のペアに挑戦',()=>{try{startFriendBattle(friendDecode(input.value),watchCheck.checked)}catch(err){alert(err.message)}},section);start.className='full primary';start.disabled=state.team.length!==2||sameSpeciesTeam();
 }
 function renderBattle(){
+if(!battle||battle.phase!=='choose'||!battle.spectator||!battle.autoSpectate)stopSpectatorTimer();
 let box=$('battle-ui');if(!box)return;box.replaceChildren();
 const add=(tag,text,parent=box,cls='')=>{let el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;parent.appendChild(el);return el};
 const btn=(label,fn,parent=box)=>{let b=add('button',label,parent);b.onclick=fn;return b};
-if(!battle){renderFriendMenu(box,add,btn);add('p','牧場で異なる種族の2匹をチームに編成して、CPUと戦おう！',box,'note');let b=btn('⚔️ 通常CPU対戦',()=>startBattle('normal'));b.className='full primary';b.disabled=state.team.length!==2||sameSpeciesTeam();let a=btn('🏟️ 無限の塔に挑戦',()=>safeStartArena());a.className='full primary';a.disabled=state.team.length!==2||sameSpeciesTeam();if(a.disabled){add('p',state.team.length!==2?'⚠️ 無限の塔には牧場で2匹をチーム編成してください。':'⚠️ 無限の塔には異なる種族の2匹を編成してください。',box,'note');}add('p','無限の塔：毎ターンMPが1〜7回復。HP・MPは階層間で引き継ぎ。10階ごとにボス登場。撤退可能。最高突破 '+(state.arenaBest||0)+'階',box,'note');return}
-add('div',(battleMode==='arena'?'🏯 無限の塔 '+(arenaWins+1)+'階 / 最高突破 '+arenaWins+'階　':battleMode==='friend'?'🤝 友達対戦　':'')+(battle.result||'第'+battle.turn+'ターン'),box,'badge');
+if(!battle){renderFriendMenu(box,add,btn);renderTrainingMenu(box,add,btn);let a=btn('🏟️ 無限の塔に挑戦',()=>safeStartArena());a.className='full primary';a.disabled=state.team.length!==2||sameSpeciesTeam();if(a.disabled){add('p',state.team.length!==2?'⚠️ 無限の塔には牧場で2匹をチーム編成してください。':'⚠️ 無限の塔には異なる種族の2匹を編成してください。',box,'note');}add('p','無限の塔：毎ターンMPが1〜7回復。HP・MPは階層間で引き継ぎ。10階ごとにボス登場。撤退可能。最高突破 '+(state.arenaBest||0)+'階',box,'note');return}
+add('div',(battleMode==='arena'?'🏯 無限の塔 '+(arenaWins+1)+'階 / 最高突破 '+arenaWins+'階　':battleMode==='friend'?'🤝 友達対戦　':battleMode==='training'?'🏋️ 訓練　':'')+(battle.result||'第'+battle.turn+'ターン'),box,'badge');
 for(const side of ['敵','味方']){
 add('div',side+'チーム',box,'mini');
 let grid=add('div','',box,'battle-grid');
 battle.all.filter(x=>x.side===side).forEach(f=>{let c=add('div','',grid,'fighter'+(f.hp<=0?' ko':''));c.dataset.side=f.side;c.dataset.index=f.i;add('b',(side==='味方'?(f.i===0?'🛡️前衛 ':'🌿後衛 '):'')+f.name,c);if(pendingTarget&&pendingTarget.side===side&&(f.hp>0||(['revive','forestrevive'].includes(pendingTarget.cmd)&&f.hp<=0))){c.classList.add('targetable');c.setAttribute('role','button');c.setAttribute('tabindex','0');c.onclick=()=>chooseAction(pendingTarget.cmd,f.i);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseAction(pendingTarget.cmd,f.i)}}}let sprite=document.createElement('canvas');sprite.width=160;sprite.height=120;sprite.setAttribute('aria-label',f.name+'の姿');c.appendChild(sprite);if(f.boss){c.classList.add('giant-boss');let art=document.createElement('div');art.className='giant-boss-art';art.textContent=f.bossEmoji||'🐉';sprite.replaceWith(art)}else drawBattleSprite(sprite,f.type,f.speciesName||f.name);add('div','',c,'effect-layer');if(f.hp<=0)add('span','戦闘不能',c,'ko-label');if(battleMode==='quest'&&f.boss){add('div',questBossHealthText(f),c,'quest-boss-state')}else{add('div','HP '+f.hp+'/'+f.maxHp,c);let bar=add('div','',c,'bar');let fill=add('i','',bar);fill.style.width=100*f.hp/f.maxHp+'%';if(f.hp/f.maxHp<=.25)fill.classList.add('low-hp')}let bar;add('div','MP '+f.mp+'/'+f.maxMp,c);bar=add('div','',c,'bar mp');let mpFill=add('i','',bar);mpFill.style.width=(f.maxMp?100*f.mp/f.maxMp:0)+'%'})}
 if(battleMode==='quest'&&questRun){add('div','🗺️ '+questRun.title+'　'+(questRun.stage+1)+'/3戦目'+(questRun.stage===2?'【ボス】':''),box,'quest-status');if(questRun.stage===2&&questRun.difficulty>=4&&battle.turn%3===0&&battle.phase==='choose')add('p','⚠️ ボスが力をためている！ このターンは強力な攻撃が来る！',box,'quest-boss-state')}
-if(battle.phase==='choose'){
+if(battle.phase==='choose'&&battle.spectator){
+ add('p','👀 観戦モード：両チームをCPUが操作します。',box,'note');
+ btn('▶ 次のターン',()=>{battle.autoSpectate=false;stopSpectatorTimer();autoQueueTurn()}).className='full primary';
+ btn(battle.autoSpectate?'⏸ 自動進行を停止':'⏩ 自動進行',()=>{battle.autoSpectate=!battle.autoSpectate;storeBattle();renderBattle()}).className='full';
+ scheduleSpectatorTurn();
+}
+if(battle.phase==='choose'&&!battle.spectator){
 let f=nextChooser();if(f){
 add('p',f.name+'の行動を選択（'+(battle.queue.length+1)+'回目）',box,'mini');
 let opts=add('div','',box,'battle-actions');
@@ -1181,10 +1236,10 @@ btn('守る',()=>chooseAction('guard',f.i),opts);
 f.moves.forEach(id=>{let mv=moveById(id);if(!mv)return;let b=btn(mv.name+' (MP'+mv.mp+')',()=>{if(['heal','rabbitheal','revive','forestrevive'].includes(id)){targetMode(id,'味方')}else if(['focus','quick','double','shadow','pierce','armorbreak','soulshock','lifeblade','smash','meteor','steel','bolt','jump','jelslash','witchdrain','windblade','turtleblast','spark','frost','darkflare','ninjacut','lastblade','split','timefreeze'].includes(id)){targetMode(id,'敵')}else chooseAction(id,f.i)},opts);b.disabled=f.mp<mv.mp||(['revive','forestrevive'].includes(id)&&!battle.all.some(x=>x.side==='味方'&&x.hp<=0))});
 if(battle.queue.length){btn('行動選択を最初からやり直す',()=>{battle.queue=[];pendingTarget=null;storeBattle();renderBattle()}).className='full'}
 }}
-if(battleMode==='friend'&&battle.phase==='end')add('p','🤝 友達対戦の結果：'+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
+if((battleMode==='friend'||battleMode==='training')&&battle.phase==='end')add('p',(battleMode==='training'?'🏋️ 訓練の結果：':'🤝 友達対戦の結果：')+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
 let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
-if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&battleMode==='friend')btn('🔄 同じ友達ペアに再挑戦',()=>{if(friendLastPair)startFriendBattle(friendLastPair);else alert('再戦するには友達対戦コードを読み込み直してください。')}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
+if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&battleMode==='friend')btn('🔄 同じ友達ペアに再挑戦',()=>{if(friendLastPair)startFriendBattle(friendLastPair,battle.spectator);else alert('再戦するには友達対戦コードを読み込み直してください。')}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
 if(battleMode==='arena'&&battle.phase==='choose')btn('🏁 撤退して記録を残す',retireArena).className='full';
 if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
 else if(battle.phase==='end'&&battle.result!=='勝利！')btn('育成画面に戻る',()=>{battle=null;storeBattle();closeBattle();renderBattle()}).className='full';
