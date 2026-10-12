@@ -81,7 +81,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <section class="card stats-card"><h2>能力値</h2><div id="stats" class="stats"></div></section>
 <section class="card comment-card"><h2>育成コメント</h2><div id="comment" class="comment" aria-live="polite">卵を孵化させよう！</div></section>
 <section class="card"><h2>育成コマンド</h2><div id="buttons" class="buttons"></div><p class="note hint">自由行動：6能力のうち1つと上昇量がランダム。猛特訓：防御を含む全能力上昇、失敗すると即育成終了。</p></section>
-<section class="card" id="evolution-card" hidden><h2>✨ 進化先を選ぶ</h2><p class="note">進化後の能力値を比較して選べます。★は条件達成で解放された特別進化です。</p><div id="evolution-options"></div></section><section class="card" id="moves-card" hidden><h2>特技を3つ選ぶ</h2><p class="note">選ばなかった習得可能技も記録されます。将来、業師で入れ替えられます。</p><div id="move-options"></div><button id="save-monster" class="full primary">この3つで完成・保存</button></section>
+<section class="card" id="evolution-card" hidden><h2>✨ 進化先を選ぶ</h2><p class="note">進化後の能力値を比較して選べます。★は条件達成で解放された特別進化です。</p><div id="evolution-options"></div></section><section class="card" id="moves-card" hidden><h2>特技を3つ選ぶ</h2><p class="note">選ばなかった習得可能技も記録されます。将来、業師で入れ替えられます。</p><div id="move-options"></div><button id="save-monster" class="full primary">この3つで完成・保存</button><button id="back-to-evolution" class="full" style="margin-top:10px">↩ 種族選択に戻る</button></section>
 <section class="card"><h2>🐾 牧場・チーム編成</h2><div id="team-summary" class="note"></div><button id="open-farm" class="full primary">🐾 牧場を開く・チーム編成</button></section>
 <section class="card"><h2>📖 モンスター図鑑</h2><div id="dex-summary" class="note"></div><button id="open-dex" class="full primary">📖 図鑑を開く</button></section>
 <section class="card"><h2>🗺️ 日替わりクエスト</h2><p class="note">毎朝4時更新・1日5件。3連戦でHP・MPを引き継ぎます。</p><button id="open-quests" class="full primary">⚔️ クエストを開く</button><div id="quest-summary" class="note"></div></section>
@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.1.1';
+const APP_VERSION='Ver.4.1.2';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -357,7 +357,7 @@ const moveBook=[
 {id:'dream',name:'夢幻の霧',mp:20,desc:'敵全体の攻撃を弱める',exclusive:'ぽわん・上位種'},
 {id:'steel',name:'鋼鉄崩し',mp:24,desc:'敵1匹に強力な物理攻撃。防御50％無視',exclusive:'鋼の巨獣'},
 {id:'wind',name:'風神の舞',mp:28,desc:'敵全体に先制物理攻撃。20％で防御無視',exclusive:'風の幻獣'},
-{id:'spirit',name:'星霊の祝福',mp:10,desc:'最後に行動。味方全体のHPとMP10を回復',exclusive:'星の精霊'},
+{id:'spirit',name:'星霊の祝福',mp:10,desc:'最後に行動。味方全員のHPを賢さに応じて回復し、MPを60回復',exclusive:'星の精霊'},
 {id:'guardian',name:'生命の盾',mp:25,desc:'先制で味方全体の被ダメージ50％軽減（2ターン）',exclusive:'生命の守護者'},
 {id:'rainbow',name:'虹色の奇跡',mp:35,desc:'敵全体攻撃と味方全体回復',exclusive:'虹の奇獣'},
 {id:'judgement',name:'魔王の審判',mp:30,desc:'敵1匹へ強力な魔法攻撃。20％で次の行動を封じる',exclusive:'魔王の使い'},
@@ -502,10 +502,22 @@ function renderReplacement(){
 }
 
 function renderEvolutions(){let card=$('evolution-card');card.hidden=!(m&&m.phase==='evolve');if(card.hidden)return;let root=$('evolution-options');root.replaceChildren();evolutionChoices(m).forEach(o=>{let el=document.createElement('div');el.className='evolution-choice';let cv=document.createElement('canvas');cv.width=160;cv.height=120;cv.className='evolution-sprite';el.appendChild(cv);drawMonsterSprite(cv,m.type,o.name);let body=document.createElement('div');body.className='evolution-info';let title=document.createElement('strong');title.textContent=(o.special?'★ ':'')+o.name;body.appendChild(title);let typ=document.createElement('div');typ.className='mini';typ.textContent=evolutionCategory(o.name);body.appendChild(typ);let after=o.bonus?m.stats.map((n,i)=>Math.max(0,n+o.bonus[i])):null;let stat=document.createElement('div');stat.className='mini';stat.textContent=after?keys.map((k,i)=>k+' '+after[i]+' ('+(o.bonus[i]>=0?'+':'')+o.bonus[i]+')').join(' ／ '):'能力値：？？？（総合 '+Math.max(0,1260-m.stats.reduce((a,b)=>a+b,0))+'）';body.appendChild(stat);let total=document.createElement('div');total.className='mini';total.textContent=after?'総合 '+after.reduce((a,b)=>a+b,0)+' (+'+o.bonus.reduce((a,b)=>a+b,0)+')':'進化時に能力値をランダム決定';if(o.desc){let desc=document.createElement('div');desc.className='mini';desc.textContent='✨ '+o.desc;body.appendChild(desc)}body.appendChild(total);let b=document.createElement('button');b.textContent=o.noEvolution?'進化しない（この姿で登録）':'この姿に進化';b.className='primary';b.onclick=()=>evolve(o.name,o.bonus);body.appendChild(b);el.appendChild(body);root.appendChild(el);drawMonsterSprite(cv,m.type,o.name)})}
+// Ver.4.1.2: 技選択から進化先を選び直す。育成終了時の能力・ログを復元。
+function backToEvolutionFromMoves(){
+ if(!m||m.phase!=='moves'||pendingReplacement)return;
+ const snap=m.preEvolutionSnapshot;
+ if(!snap||!Array.isArray(snap.stats)||snap.stats.length!==6){alert('進化前の記録が見つからないため、安全に戻れません。');return}
+ const previous=m;
+ m={...m,name:snap.name,stats:[...snap.stats],logs:[...snap.logs],phase:'evolve'};
+ delete m.preEvolutionSnapshot;
+ state.current=m;
+ try{localStorage.setItem(key,JSON.stringify(state))}catch(err){m=previous;state.current=m;alert('保存できなかったため、種族選択には戻りませんでした。');return}
+ render();requestAnimationFrame(()=>$('evolution-card').scrollIntoView({behavior:'smooth',block:'start'}));
+}
 function renderMoves(){let card=$('moves-card');card.hidden=!(m&&m.phase==='moves');if(card.hidden)return;
 let moves=normalMoves(m);let special=fourthMove(m);let chosen=new Set([...document.querySelectorAll('#move-options input:checked')].map(x=>x.value));
 $('move-options').innerHTML=(special?'<div class="note" style="padding:8px;margin-bottom:8px">✨ 固有技（自動習得・4枠目）：<b>'+special.name+'</b>（MP '+special.mp+'）<br>'+special.desc+'</div>':'')+moves.map((v,i)=>'<label class="move-option"><input type="checkbox" value="'+v.id+'" '+(chosen.size?chosen.has(v.id):i<3?'checked':'')+'><span><b>'+v.name+'</b>　MP '+v.mp+'<small>'+v.desc+(v.exclusive?'【種族専用】':'')+'</small></span></label>').join('');
-$('move-options').querySelectorAll('input').forEach(el=>el.onchange=()=>{let count=$('move-options').querySelectorAll('input:checked').length;if(count>3){el.checked=false;alert('特技は3つまでです。');return}if(count===3)requestAnimationFrame(()=>setTimeout(openRegisterConfirm,90))});$('save-monster').onclick=openRegisterConfirm}
+$('move-options').querySelectorAll('input').forEach(el=>el.onchange=()=>{let count=$('move-options').querySelectorAll('input:checked').length;if(count>3){el.checked=false;alert('特技は3つまでです。');return}if(count===3)requestAnimationFrame(()=>setTimeout(openRegisterConfirm,90))});$('save-monster').onclick=openRegisterConfirm;$('back-to-evolution').onclick=backToEvolutionFromMoves}
 function sameSpeciesTeam(){let pair=state.team.map(id=>state.roster.find(x=>x.id===id));return pair.length===2&&pair.every(Boolean)&&pair[0].name===pair[1].name}
 // Ver.3.5.5: 牧場から個体を1匹ずつ放牧（進化時の同種族制限は未導入）
 function releaseFromFarm(id){
@@ -901,7 +913,7 @@ case 'star':foes.forEach(x=>hurt(f,x,2.15,true));break;
 case 'heal':if(friend)heal(friend,f.stats[3]*.6+20,f);break;
 case 'pulse':heal(f,f.stats[3]*.25+18);break;
 case 'life':heal(f,f.maxHp*.48);break;
-case 'spring':case 'spirit':friends.forEach(x=>heal(x,f.stats[3]*.7+25,f));if(cmd==='spirit')friends.forEach(x=>{let n=Math.min(10,x.maxMp-x.mp);x.mp+=n;bLog(x.name+'のMPが'+n+'回復！')});break;
+case 'spring':case 'spirit':friends.forEach(x=>heal(x,f.stats[3]*.7+25,f));if(cmd==='spirit')friends.forEach(x=>{let n=Math.max(0,Math.min(60,x.maxMp-x.mp));x.mp+=n;bLog(x.name+'のMPが'+n+'回復！')});break;
 case 'bubble':friends.forEach(x=>heal(x,f.stats[3]*.4+18,f));break;
 case 'brace':f.defBuff+=Math.max(8,Math.round(f.stats[5]*.25));bLog(f.name+'の防御が上がった！');break;
 case 'earth':friends.forEach(x=>x.defBuff+=Math.max(8,Math.round(f.stats[5]*.18)));bLog('味方全体の防御が上がった！');break;
@@ -1197,7 +1209,7 @@ function startFriendBattle(pair,spectator=false){
  }catch(err){console.error('友達対戦開始エラー',err);alert('友達対戦を開始できません：'+err.message)}
 }
 function renderFriendMenu(box,add,btn){
- const section=add('section','',box,'card');add('h3','🤝 友達対戦',section);add('p','自分のチーム2匹をコードで送る／友達のコードを読み込んでCPU対戦。報酬なし・何度でも再戦可能。',section,'note');
+ const section=add('section','',box,'card');add('h3','🤝 友達対戦',section);add('p','自分のチーム2匹をコードで送る／友達のコードを読み込んでCPU対戦。報酬なし・1戦で終了。',section,'note');
  const exportBtn=btn('📤 自分のペアの対戦コードを発行',()=>{
   try{const code=friendEncode(friendExportPair());output.value=code;output.hidden=false;copyBtn.hidden=false;output.focus();output.select()}catch(err){alert(err.message)}
  },section);exportBtn.className='full';exportBtn.disabled=state.team.length!==2||sameSpeciesTeam();
@@ -1239,7 +1251,7 @@ if(battle.queue.length){btn('行動選択を最初からやり直す',()=>{battl
 if((battleMode==='friend'||battleMode==='training')&&battle.phase==='end')add('p',(battleMode==='training'?'🏋️ 訓練の結果：':'🤝 友達対戦の結果：')+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
 let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
-if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&battleMode==='friend')btn('🔄 同じ友達ペアに再挑戦',()=>{if(friendLastPair)startFriendBattle(friendLastPair,battle.spectator);else alert('再戦するには友達対戦コードを読み込み直してください。')}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
+if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
 if(battleMode==='arena'&&battle.phase==='choose')btn('🏁 撤退して記録を残す',retireArena).className='full';
 if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
 else if(battle.phase==='end'&&battle.result!=='勝利！')btn('育成画面に戻る',()=>{battle=null;storeBattle();closeBattle();renderBattle()}).className='full';
