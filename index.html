@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.3.5.10</title><style>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.3.6.0</title><style>
 *{box-sizing:border-box}body{margin:0;background:#dce6d4;color:#253d2e;font-family:-apple-system,BlinkMacSystemFont,sans-serif}main{max-width:450px;margin:auto;padding:7px 9px 35px}h1{font-size:19px;margin:2px 0}.sub,.note{font-size:11px;line-height:1.35}.sub{margin-bottom:4px}.card{background:#f5f8ec;border:2px solid #405b44;border-radius:11px;padding:8px;margin:6px 0;box-shadow:2px 2px 0 #afc2a7}.row{display:flex;justify-content:space-between;gap:6px;align-items:center}.badge{font-size:11px;background:#d9e8cf;border-radius:5px;padding:3px 5px}.lcd{height:95px;background:#b4c99f;border:3px solid #415a42;border-radius:7px;display:grid;place-items:center;margin-top:5px}canvas{width:85px;height:85px;image-rendering:pixelated}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.stat{background:#e3edd9;padding:5px 6px;border-radius:5px;font-size:12px;display:flex;justify-content:space-between;gap:3px}.buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}button{min-height:38px;border:2px solid #39513e;border-radius:7px;background:#dceccf;font-size:13px;font-weight:700;color:#263d2d}button:active{background:#b7d5a3}.risk{background:#f0d5c6}.primary{background:#a7d18e}.log{font-size:12px;line-height:1.6;max-height:170px;overflow:auto;white-space:pre-wrap}h2{font-size:14px;margin:0 0 5px}details{margin:5px 0;padding:5px;background:#e6efdd;border-radius:5px;font-size:13px}summary{font-weight:700;cursor:pointer}.full{width:100%;margin-top:8px}.comment{background:#e3edd9;border-left:4px solid #6d8e65;padding:7px 8px;font-size:12px;line-height:1.4;border-radius:4px;min-height:33px}.comment strong{font-weight:700}.comment{white-space:pre-wrap}.hint{margin:5px 0 0}.move-option{display:flex;gap:7px;align-items:center;padding:6px 4px;border-bottom:1px solid #cbd9c4;font-size:12px}.move-option input{width:19px;height:19px;flex:none}.move-option small{display:block;color:#536d58}.evolution-choice{display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #cbd9c4}.evolution-sprite{width:66px;height:66px;flex:none;background:#b4c99f;border:2px solid #405b44;border-radius:5px}.evolution-info{min-width:0;flex:1;font-size:12px}.evolution-info button{width:100%;margin-top:5px}.evolution-info .mini{line-height:1.6}.roster-item{border:1px solid #b2c7a9;border-radius:7px;padding:7px;margin:6px 0;font-size:12px}.roster-item .row{margin-bottom:4px}.tag{background:#d8e8cb;border-radius:4px;padding:2px 5px}.mini{font-size:11px}.compact-head{font-size:14px}.stats-card{padding:7px 8px}.comment-card{padding:7px 8px}
 @media(max-height:700px){main{padding-top:4px}.sub{display:none}.lcd{height:76px}canvas{width:69px;height:69px}.card{margin:4px 0;padding:6px}.stats-card,.comment-card{padding:5px 7px}button{min-height:34px}.buttons{gap:4px}h2{margin-bottom:3px}.stat{padding:4px 5px}.hint{display:none}}
 #battle-ui .battle-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0}#battle-ui .fighter{background:#e3edd9;border:1px solid #a5bea0;border-radius:6px;padding:6px;font-size:11px}#battle-ui .fighter b{font-size:13px}#battle-ui .bar{height:8px;background:#c9c9c1;border-radius:5px;overflow:hidden;margin:4px 0}#battle-ui .bar i{display:block;height:100%;background:#5a9565}#battle-ui .bar.mp i{background:#6589ab}#battle-ui .battle-log{white-space:pre-wrap;font-size:12px;max-height:210px;overflow:auto;background:#e3edd9;border-radius:5px;padding:7px;margin:7px 0}#battle-ui .battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}#battle-ui button{font-size:12px}#battle-ui .selected{background:#a7d18e}#battle-ui .fighter.ko{opacity:.45}
@@ -38,7 +38,7 @@
 @media(prefers-reduced-motion:reduce){.comment.milestone-glow{animation:none;box-shadow:0 0 0 2px #d39b22}}
 #master-screen[hidden]{display:none!important}#master-screen{position:fixed;inset:0;z-index:115;background:#dce6d4;overflow-y:auto;padding:env(safe-area-inset-top) 9px env(safe-area-inset-bottom)}#master-screen .master-shell{max-width:450px;margin:auto;padding:9px 2px 30px}body.in-master{overflow:hidden}.master-records{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}.master-record{background:#e3edd9;border-radius:6px;padding:8px;font-size:12px}.master-record b{display:block;font-size:17px;margin-top:3px}.front-tag{background:#f3d5c6;color:#723b28}.back-tag{background:#d5e7f7;color:#24547b}
 
-/* Ver.3.5.10: 確率系の専用予兆色と超レアの点滅 */
+/* Ver.3.6.0: 確率系の専用予兆色と超レアの点滅 */
 .comment.chrono-omen{background:#d8efff;border-left-color:#2584c8;color:#145079}
 .comment.glass-omen{background:#e0fff6;border-left-color:#18a79b;color:#16635d}
 .comment.chaos-omen{background:#fff0cc;border-left-color:#f19b17;color:#8a4200}
@@ -50,13 +50,18 @@
 @keyframes glass-omen-flash{to{box-shadow:0 0 18px 5px #51d6bf}}
 @keyframes rare-omen-blink{from{box-shadow:0 0 2px 1px currentColor;filter:brightness(1)}to{box-shadow:0 0 18px 5px currentColor;filter:brightness(1.13)}}
 @media(prefers-reduced-motion:reduce){.comment.chrono-glow,.comment.glass-glow,.comment.rare-blink{animation:none;box-shadow:0 0 0 2px currentColor}}
-</style></head><body><main><h1>🥚 たまご育成 <span class="badge">Ver.3.5.10</span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
+/* 図鑑 */
+#dex-screen[hidden]{display:none!important}#dex-screen{position:fixed;inset:0;z-index:115;background:#dce6d4;overflow-y:auto;padding:env(safe-area-inset-top) 9px env(safe-area-inset-bottom)}
+#dex-screen .dex-shell{max-width:450px;margin:auto;padding:9px 2px 35px}body.in-dex{overflow:hidden}
+.dex-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.dex-tile{border:2px solid #a4bba0;border-radius:9px;background:#e6efdd;padding:7px 3px;text-align:center;min-width:0;cursor:pointer;color:#263d2d}.dex-tile.found{border-color:#527d51;background:#eaf3df}.dex-tile canvas{width:78px;height:78px;max-width:100%;display:block;margin:auto;background:#b4c99f;border-radius:6px}.dex-tile .dex-name{display:block;font-size:11px;margin-top:5px;overflow-wrap:anywhere}.dex-tile .dex-no{font-size:10px;color:#60745f}.dex-tile.unknown canvas{filter:brightness(0)}.dex-detail{background:#e6efdd;border-radius:8px;padding:11px;margin-top:10px;font-size:13px;line-height:1.7}.dex-detail canvas{width:130px;height:130px;display:block;margin:0 auto 6px;background:#b4c99f;border-radius:7px}.dex-progress{font-weight:bold;font-size:14px}.dex-meter{height:9px;border-radius:9px;background:#c8d6c0;overflow:hidden;margin:7px 0}.dex-meter i{display:block;height:100%;background:#6b9c60}
+</style></head><body><main><h1>🥚 たまご育成 <span class="badge">Ver.3.6.0</span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
 <section class="card"><div class="row"><strong id="name">はじめての卵</strong><span id="day" class="badge">待機中</span></div><div class="lcd"><canvas id="sprite" width="160" height="120"></canvas></div><div class="row" style="margin-top:9px"><span id="status">卵を孵化させよう</span><span id="count" class="badge"></span></div><div id="hatch-omen" class="hatch-omen" hidden aria-live="polite"></div></section>
 <section class="card stats-card"><h2>能力値</h2><div id="stats" class="stats"></div></section>
 <section class="card comment-card"><h2>育成コメント</h2><div id="comment" class="comment" aria-live="polite">卵を孵化させよう！</div></section>
 <section class="card"><h2>育成コマンド</h2><div id="buttons" class="buttons"></div><p class="note hint">自由行動：6能力のうち1つと上昇量がランダム。猛特訓：防御を含む全能力上昇、失敗すると即育成終了。</p></section>
 <section class="card" id="evolution-card" hidden><h2>✨ 進化先を選ぶ</h2><p class="note">進化後の能力値を比較して選べます。★は条件達成で解放された特別進化です。</p><div id="evolution-options"></div></section><section class="card" id="moves-card" hidden><h2>特技を3つ選ぶ</h2><p class="note">選ばなかった習得可能技も記録されます。将来、業師で入れ替えられます。</p><div id="move-options"></div><button id="save-monster" class="full primary">この3つで完成・保存</button></section>
 <section class="card"><h2>🐾 牧場・チーム編成</h2><div id="team-summary" class="note"></div><button id="open-farm" class="full primary">🐾 牧場を開く・チーム編成</button></section>
+<section class="card"><h2>📖 モンスター図鑑</h2><div id="dex-summary" class="note"></div><button id="open-dex" class="full primary">📖 図鑑を開く</button></section>
 <section class="card"><h2>👑 マスター</h2><div id="master-summary" class="note"></div><button id="open-master" class="full primary">👑 マスター情報・持ち物</button></section>
 <section class="card" id="battle-card"><h2>⚔️ CPU対戦</h2><p class="note">左：前衛（物理攻撃＋10％・被狙い70％）／右：後衛（味方回復＋20％・被狙い30％）。</p><button id="open-battle" class="full primary">⚔️ 対戦画面を開く</button><div id="arena-record" class="note" style="margin-top:7px"></div></section>
 <section class="card"><h2>歴代記録</h2><div id="records"></div><button class="full" id="backup">記録をバックアップ（JSON）</button><p class="note">記録はこのブラウザ内に保存。消去・機種変更に備えてバックアップしてください。</p></section>
@@ -65,6 +70,7 @@
 <div id="master-screen" hidden><div class="master-shell"><div class="row"><h2>👑 マスター</h2><button id="master-back" type="button">育成に戻る</button></div>
 <section class="card"><h2>プロフィール</h2><div class="row"><strong id="master-name-display"></strong><button id="master-rename" type="button">✏️ 名前を変更</button></div><div id="master-records" class="master-records"></div><p class="note">過去の戦闘回数など、旧バージョンで保存されていない記録は復元できません。</p></section>
 <section class="card"><h2>🎒 持ち物</h2><div id="master-items"></div><p class="note">アイテムの入手・使用は今後追加予定です。使用できるのは育成中のみで、戦闘中には使用しません。</p></section></div></div>
+<div id="dex-screen" hidden><div class="dex-shell"><div class="row"><h2>📖 モンスター図鑑</h2><button id="dex-back" type="button">育成に戻る</button></div><section class="card"><div id="dex-count" class="dex-progress"></div><div class="dex-meter"><i id="dex-meter-bar"></i></div><p class="note">一度でも牧場に登録した種族を記録します。放牧しても発見記録は消えません。未発見の種族はシルエットで表示されます。</p><div id="dex-grid" class="dex-grid"></div><div id="dex-detail" class="dex-detail" hidden></div></section></div></div>
 <div id="farm-screen" hidden><div class="farm-shell"><div class="row"><h2>🐾 牧場・チーム編成</h2><button id="farm-back" type="button">育成に戻る</button></div><section class="card"><div id="team-info" class="note"></div><div class="farm-tools"><input id="farm-search" type="search" placeholder="名前・ニックネーム・種類・特技・番号で検索" autocomplete="off" aria-label="牧場を検索"><select id="farm-sort" aria-label="並べ替え"><option value="new">新しい順</option><option value="old">古い順</option><option value="sum">総合能力が高い順</option><option value="hp">HPが高い順</option><option value="mp">MPが高い順</option><option value="atk">力が高い順</option><option value="int">賢さが高い順</option><option value="spd">素早さが高い順</option><option value="def">防御が高い順</option></select></div><div id="farm-count" class="note"></div><div id="roster"></div></section></div></div><div id="battle-screen" hidden><div class="battle-shell">
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge">Ver.3.5.4</span></h2><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
@@ -178,6 +184,9 @@ function evolutionChoices(mon){let base=branches[mon.type]||branches[0];return [
 const key='tamago_game_v1';let state;try{state=JSON.parse(localStorage.getItem(key))}catch(e){}
 if(!state||!state.records)state={total:0,completed:0,abandoned:0,injured:0,records:{},current:null};
 if(!Array.isArray(state.roster))state.roster=[];if(!Array.isArray(state.team))state.team=[];
+// Ver.3.6.0 初回だけ現在の牧場を図鑑に登録。過去のランキング等からは復元しない。
+if(!Array.isArray(state.discoveredSpecies))state.discoveredSpecies=[...new Set(state.roster.map(v=>v&&v.name).filter(Boolean))];
+else state.discoveredSpecies=[...new Set(state.discoveredSpecies.filter(n=>typeof n==='string'))];
 // Ver.3.5.5: 既存セーブを維持しながらマスター情報を追加
 if(!state.master||typeof state.master!=='object'||Array.isArray(state.master))state.master={};
 if(typeof state.master.name!=='string')state.master.name='ななしのマスター';
@@ -269,7 +278,7 @@ if(a==='猛特訓'){
 if(great)msg+=' ★大成功！ 成長1.4倍！';
 m.logs.unshift(m.day+'日目：'+msg);m.lastActionComment=m.logs[0];m.day++;if(m.day>7)finish(false);else{save();render()}}
 function evolve(name,bonus){if(name===species[m.type][0]&&!confirm('進化せず「'+name+'」のまま牧場へ登録しますか？'))return;
-// Ver.3.5.10: 進化直前の状態を保存。比較画面から別種族を選び直せる。
+// Ver.3.6.0: 進化直前の状態を保存。比較画面から別種族を選び直せる。
 if(m.phase==='evolve')m.preEvolutionSnapshot={stats:[...m.stats],logs:[...m.logs],name:m.name};
 if(name==='メタルぞんび')m.stats=metalStats(m.stats.reduce((a,b)=>a+b,0));else m.stats=m.stats.map((x,i)=>Math.max(0,x+(bonus[i]||0)));m.name=name;m.phase='moves';m.logs.unshift('進化：'+name+'（'+(name==='メタルぞんび'?'特殊能力抽選':'種族ボーナス加算')+'）');
 save();render()}
@@ -352,6 +361,7 @@ function saveCompleted(){
 }
 function finalizeMonster(entry,oldId){
  const oldRoster=state.roster,oldTeam=state.team,oldCurrent=m,oldRecords=state.records;
+ const oldDiscovered=state.discoveredSpecies;
  const old=oldId==null?null:oldRoster.find(v=>v.id===oldId);
  if(oldId!=null&&!old){alert('既存個体が見つかりません。入れ替えを中止しました。');return}
  // 保存失敗時は元に戻す。記録は育成時点の歴代ランキングなので維持。
@@ -360,10 +370,11 @@ function finalizeMonster(entry,oldId){
  const nextRecords={...oldRecords};
  [...keys,'総合'].forEach((k,i)=>{let arr=[...(oldRecords[k]||[])];if(!arr.some(v=>v.id===entry.id))arr.push(entry);arr.sort((a,b)=>i===6?b.sum-a.sum:b.stats[i]-a.stats[i]);nextRecords[k]=arr.slice(0,5)});
  state.roster=nextRoster;state.team=nextTeam;state.records=nextRecords;
+ state.discoveredSpecies=[...new Set([...oldDiscovered,entry.name])];
  m={...m,moves:[...entry.moves],availableMoves:[...entry.availableMoves],phase:'done',logs:[old?'牧場の個体を入れ替えて保存した！':'特技を選び、牧場に保存した！',...m.logs]};
  state.current=m;
- try{localStorage.setItem(key,JSON.stringify(state))}catch(e){state.roster=oldRoster;state.team=oldTeam;state.records=oldRecords;m=oldCurrent;state.current=m;alert('保存に失敗しました。既存の個体はそのままです。');return}
- pendingReplacement=null;delete m.preEvolutionSnapshot;const screen=$('replace-screen');if(screen)screen.hidden=true;
+ try{localStorage.setItem(key,JSON.stringify(state))}catch(e){state.roster=oldRoster;state.team=oldTeam;state.records=oldRecords;state.discoveredSpecies=oldDiscovered;m=oldCurrent;state.current=m;alert('保存に失敗しました。既存の個体はそのままです。');return}
+ pendingReplacement=null;renderDex();delete m.preEvolutionSnapshot;const screen=$('replace-screen');if(screen)screen.hidden=true;
  render();
 }
 function compareMonsterHtml(mon,title){
@@ -377,7 +388,7 @@ function compareMonsterHtml(mon,title){
  const mv=document.createElement('div');mv.style.marginTop='6px';mv.textContent='特技：'+moves;el.appendChild(mv);
  return {el,cv};
 }
-// Ver.3.5.10: 比較を中止して進化先選択へ戻る。牧場データには触れない。
+// Ver.3.6.0: 比較を中止して進化先選択へ戻る。牧場データには触れない。
 function backToEvolutionFromReplacement(){
  if(!pendingReplacement)return;
  const snap=m&&m.preEvolutionSnapshot;
@@ -1037,12 +1048,85 @@ function renderMaster(){
  if(!entries.length){const p=document.createElement('p');p.className='note';p.textContent='まだアイテムを持っていません。';$('master-items').appendChild(p)}
  else for(const [id,count] of entries){const row=document.createElement('div');row.className='roster-item';row.textContent=id+'　× '+Math.floor(Number(count))+'個';$('master-items').appendChild(row)}
 }
+// Ver.3.6.0 モンスター図鑑。進化候補の定義を元に全種族を列挙する。
+const dexNames=[...new Set([...species.map(v=>v[0]),...branches.flat().map(v=>v[0]),...extraEvo.map(v=>v.name),...Object.keys(rareSpecs)])];
+const dexLore={
+'ぷるん':'ぷるぷると揺れる小さな命。どんな姿へ育つかは、マスターの育て方次第。',
+'ぴょこ':'好奇心旺盛で、じっとしているのが苦手。素早い動きが自慢。',
+'ごつん':'岩のように頑丈な体を持つ。ゆっくりだが、力強く成長する。',
+'ぷるんキング':'ぷるんたちを束ねる堂々たる王。柔らかな体に威厳を秘める。',
+'ジェルナイト':'弾力のある体を鎧に変えて戦う騎士。仲間を守る心は固い。',
+'しずくの魔女':'水滴に魔力を閉じ込める不思議な魔女。静かな場所を好む。',
+'バブルドラゴン':'泡をまとって空を舞う竜。怒ると大きな泡が次々に生まれる。',
+'ミラースライム':'光を反射する体を持つ。鏡のような姿で敵を惑わせる。',
+'はねうさぎ':'大きな耳と軽い足取りで跳び回る。風を追いかけるのが好き。',
+'サンダーバード':'雷をまとって飛ぶ鳥。翼のひと振りで空気が震える。',
+'月影の忍者':'月明かりの下で気配を消す。影から影へと素早く移動する。',
+'森の賢者':'森の声に耳を傾ける知恵者。仲間を助ける術に長ける。',
+'疾風の剣士':'風より速く剣を振るう。守りより一撃の鋭さを信じる。',
+'岩石ゴーレム':'硬い岩を重ねた巨体。動きは遅いが、打たれ強い。',
+'火山の鬼':'熱い大地の力を宿す鬼。闘志が高まるほど力を増す。',
+'鉄壁の騎士':'厚い鎧に身を包む守護者。仲間の前に立つことを恐れない。',
+'大地の竜':'大地の奥深くで眠っていた竜。足音は地響きとなる。',
+'重戦車カメ':'重厚な甲羅を背負う。ゆっくり進みながら攻撃を受け止める。',
+'鋼の巨獣':'鋼のような筋肉を備えた巨獣。強靭な力で道を切り開く。',
+'風の幻獣':'風とともに現れ、風とともに消える。姿を追うのは難しい。',
+'星の精霊':'星明かりから生まれたといわれる精霊。夜空を見上げるのが好き。',
+'生命の守護者':'生命の息吹を感じ取り、傷ついた仲間を守ろうとする。',
+'虹の奇獣':'六つの力が調和したとき現れるという、不思議な色の獣。',
+'魔王の使い':'強い魔力に導かれて現れる。何者の命を受けているかは謎。',
+'双刃の獣':'鋭い力と速さを兼ね備える。二つの刃のような攻撃が得意。',
+'不滅の巨人':'並外れた生命力と防御力を持つ。倒れても立ち上がると噂される。',
+'メタルぞんび':'金属の体を持つ不思議な存在。傷を負っても少しずつ再生する。',
+'ゴールドキメラ':'節目の育成で現れる金色の幻獣。すさまじい勢いで行動する。',
+'ミラージュ':'敵の能力や技を写し取る幻影。真の姿を見た者は少ない。',
+'ふしちょう':'何度も困難を乗り越えた者に現れる、不屈の炎を宿す鳥。',
+'まねきねこ':'自由気ままに過ごす福の使い。仲間に小さな幸運を運ぶ。',
+'クロノドラゴン':'時の流れを乱す竜。近くでは時計が奇妙な動きをする。',
+'ガラスのきょじん':'透き通った体に巨大な力を秘める。強いが、傷つきやすい。',
+'ふたごスライム':'同じ姿が二つ並ぶ不思議な生命。受けた攻撃を跳ね返す。',
+'ねむりひめ':'眠りと目覚めの境目に生きる姫。夢の中で不思議な術を使う。',
+'ソウルイーター':'敵の生命力を奪って力に変える。静かな気配が周囲を包む。',
+'ラストサムライ':'傷を負ってなお剣を握る。最後の一太刀にすべてを懸ける。',
+'カオスエッグ':'姿も力も定まらない混沌の卵。戦うたびに新しい可能性を見せる。',
+'よわねんど':'弱々しく見える粘土の命。追い詰められると危険な力を放つ。',
+'にじフラワー':'数字の不思議な並びに反応して咲く花。虹色の力を秘める。',
+'ひよこキング':'あらゆる育成を経験した小さな王。仲間を励ます才能がある。',
+'レガシーゴーレム':'一万の命を育んだ記憶から生まれる巨人。その腕には歴史が宿る。',
+'からっぽゴースト':'魔力も知恵も空っぽに見える幽霊。敵の魔力を少しずつ奪う。',
+'じどうはんばいき':'なぜか動き出した赤い自動販売機。出てくる飲み物には要注意。'
+};
+function renderDex(){
+ const found=new Set(state.discoveredSpecies);const count=dexNames.filter(n=>found.has(n)).length;
+ $('dex-count').textContent='発見 '+count+' / '+dexNames.length+' 種類（'+Math.round(count/dexNames.length*100)+'％）';
+ $('dex-summary').textContent='発見済み '+count+' / '+dexNames.length+' 種類';
+ $('dex-meter-bar').style.width=(count/dexNames.length*100)+'%';
+ const grid=$('dex-grid');grid.replaceChildren();
+ dexNames.forEach((name,i)=>{
+  const known=found.has(name),tile=document.createElement('button');tile.type='button';tile.className='dex-tile '+(known?'found':'unknown');
+  const no=document.createElement('span');no.className='dex-no';no.textContent='No.'+String(i+1).padStart(3,'0');tile.appendChild(no);
+  const cv=document.createElement('canvas');cv.width=160;cv.height=120;tile.appendChild(cv);
+  const label=document.createElement('span');label.className='dex-name';label.textContent=known?name:'？？？';tile.appendChild(label);
+  tile.onclick=()=>showDexDetail(name,i,known);grid.appendChild(tile);
+  // 未発見でも同じ種族の画像を黒いシルエットとして表示する。
+  drawMonsterSprite(cv,0,name);
+ });
+}
+function showDexDetail(name,i,known){
+ const detail=$('dex-detail');detail.hidden=false;detail.replaceChildren();
+ const title=document.createElement('h2');title.textContent='No.'+String(i+1).padStart(3,'0')+'　'+(known?name:'？？？');detail.appendChild(title);
+ if(known){const cv=document.createElement('canvas');cv.width=160;cv.height=120;detail.appendChild(cv);drawMonsterSprite(cv,0,name)}
+ const p=document.createElement('p');p.textContent=known?(dexLore[name]||'まだ多くが謎に包まれているモンスター。'):'まだ発見されていないモンスター。牧場に登録すると情報が明らかになる。';detail.appendChild(p);
+ detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+$('open-dex').onclick=()=>{renderDex();$('dex-detail').hidden=true;$('dex-screen').hidden=false;document.body.classList.add('in-dex');$('dex-screen').scrollTop=0};
+$('dex-back').onclick=()=>{$('dex-screen').hidden=true;document.body.classList.remove('in-dex')};
 $('open-master').onclick=()=>{renderMaster();$('master-screen').hidden=false;document.body.classList.add('in-master');$('master-screen').scrollTop=0};
 $('master-back').onclick=()=>{$('master-screen').hidden=true;document.body.classList.remove('in-master')};
 $('master-rename').onclick=()=>{const name=prompt('マスター名を入力してください（1〜16文字）',state.master.name);if(name===null)return;const value=name.trim();if(!value||[...value].length>16){alert('マスター名は1〜16文字で入力してください。');return}state.master.name=value;save();renderMaster()};
 $('farm-search').addEventListener('input',renderRoster);$('farm-sort').addEventListener('change',renderRoster);
 $('open-farm').onclick=()=>{renderRoster();$('farm-screen').hidden=false;document.body.classList.add('in-farm');$('farm-screen').scrollTop=0};
 $('farm-back').onclick=()=>{$('farm-screen').hidden=true;document.body.classList.remove('in-farm')};
-updateArenaRecord();save();restoreBattle();renderMaster();$('backup').onclick=()=>{let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='たまご育成_バックアップ.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};render();
+updateArenaRecord();save();restoreBattle();renderMaster();renderDex();$('backup').onclick=()=>{let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='たまご育成_バックアップ.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};render();
 })();
 </script><section id="replace-screen" hidden><div class="replace-shell"><div class="card"><h2>🥚 同じ種族が牧場にいます</h2><p class="note">能力・特技・勝利数を比較して、牧場に残す1体を選んでください。選択後に最終確認があります。</p><div id="replace-grid" class="compare-grid"></div><div class="replace-buttons"><button id="replace-keep">🏡 既存の個体を残す</button><button id="replace-new" class="primary">🥚 新しい個体に入れ替える</button><button id="replace-evolution" class="primary">↩ 進化先の種族選択に戻る</button><button id="replace-back">↩ 特技選択に戻る</button></div></div></div></section></body></html>
