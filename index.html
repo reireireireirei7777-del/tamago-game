@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.1.4';
+const APP_VERSION='Ver.4.1.5';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -675,7 +675,7 @@ function restoreBattle(){
 }
 
 const moveById=id=>moveBook.find(v=>v.id===id);
-function mkF(mon,side,i){let st=migrateStats([...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
+function mkF(mon,side,i){let st=migrateStats([...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
 
 function initRareBattle(party,enemyMons){
  let candidates=[...branches.flat().map(x=>x[0]),...extraEvo.map(x=>x.name),...Object.keys(rareSpecs).filter(x=>x!=='カオスエッグ')];
@@ -819,7 +819,37 @@ function alive(side){return battle.all.filter(x=>x.side===side&&x.hp>0)}
 function bLog(t){battle.logs.unshift(t);battle.logs=battle.logs.slice(0,60);if(actionEffects)actionEffects.push({kind:'text',text:t})}
 function battleEffect(kind,f,value=0,critical=false){if(actionEffects)actionEffects.push({kind,side:f.side,index:f.i,value,critical})}
 function amount(n){return Math.max(1,Math.round(n*(.9+Math.random()*.2)))}
-function evade(a,d,magic=false){if(magic)return false;let ratio=d.stats[4]/Math.max(1,a.stats[4]);let chance=ratio>=5?.3:ratio>=3?.2:ratio>=2?.1:ratio>=1.5?.05:ratio>1?.02:0;return Math.random()<chance}
+// Ver.4.1.5: 戦闘専用の状態異常。牧場の保存データには書き込まない。
+const STATUS_META={sleep:{mark:'💤',label:'ねむり'},burn:{mark:'🔥',label:'やけど'},paralysis:{mark:'⚡',label:'しびれ'}};
+function applyStatus(f,kind){
+ if(!f||f.hp<=0||!STATUS_META[kind]||f.status)return false;
+ f.status={kind,left:kind==='sleep'?random(1,3):3};
+ bLog(f.name+'は'+STATUS_META[kind].label+'状態になった！ '+STATUS_META[kind].mark);
+ return true;
+}
+function statusBeforeAction(f){
+ const st=f.status;if(!st)return false;
+ if(st.kind==='sleep'){
+  bLog(f.name+'は眠っていて動けない！ 💤');st.left--;
+  if(st.left<=0){f.status=null;bLog(f.name+'は目を覚ました！')}
+  return true;
+ }
+ if(st.kind==='paralysis'&&Math.random()<.25){bLog(f.name+'はしびれて動けない！ ⚡');return true}
+ return false;
+}
+function statusAfterAction(f,startingKind){
+ if(!startingKind||f.hp<=0)return;
+ if(startingKind==='burn'){
+  const dmg=Math.min(f.hp,Math.max(1,Math.round(f.maxHp*.05)));
+  f.hp-=dmg;bLog(f.name+'はやけどで'+dmg+'ダメージ！ 🔥');battleEffect('damage',f,dmg);
+  if(f.hp<=0){bLog(f.name+'はやけどで倒れた！');battleEffect('ko',f)}
+ }
+ if(f.status&&f.status.kind===startingKind&&startingKind!=='sleep'){
+  f.status.left--;
+  if(f.status.left<=0){f.status=null;bLog(f.name+'の'+STATUS_META[startingKind].label+'が治った！')}
+ }
+}
+function evade(a,d,magic=false){if(magic)return false;let ratio=(d.stats[4]*(d.status?.kind==='paralysis'?.8:1))/Math.max(1,a.stats[4]*(a.status?.kind==='paralysis'?.8:1));let chance=ratio>=5?.3:ratio>=3?.2:ratio>=2?.1:ratio>=1.5?.05:ratio>1?.02:0;return Math.random()<chance}
 // 物理会心率は攻撃側/防御側の素早さ比率で決定。最大15%。
 function critChance(a,d){const r=a.stats[4]/Math.max(1,d.stats[4]);return r<.5?.03:r<1?.05:r<1.5?.07:r<2?.09:r<3?.12:.15}
 // ラストサムライは致命傷を戦闘中1回だけHP1で耐える。
@@ -846,6 +876,7 @@ if(!magic){let cover=alive(d.side).find(x=>x.cover&&x!==d);if(cover){target=cove
 if(evade(a,target,magic)){bLog(target.name+'は攻撃をかわした！');battleEffect('miss',target);return}
 if(magic&&target.reflect>0){target.reflect--;bLog(target.name+'は魔法を反射した！');target=a;if(target.hp<=0)return}
 let atk=magic?a.stats[3]*.58:a.stats[2]*.5;
+if(!magic&&a.status?.kind==='burn')atk*=.8;
 if(!magic&&a.side==='味方'&&a.i===0)atk*=1.10;
 if(a.speciesName==='ガラスのきょじん')atk*=1.5;
 if(a.speciesName==='ラストサムライ'&&a.hp/a.maxHp<=.3&&!magic)atk*=2;
@@ -857,6 +888,7 @@ if(target.speciesName==='ガラスのきょじん')damage=Math.max(1,Math.round(
 const wasAlive=target.hp>0;damage=takeDamage(target,damage);
 if(target.speciesName==='ふたごスライム'&&a!==target&&a.hp>0){let reflect=Math.min(a.hp,Math.max(1,Math.round(damage*.3)));a.hp-=reflect;bLog(a.name+'に'+reflect+'の反射ダメージ！');battleEffect('damage',a,reflect);if(a.hp===0)battleEffect('ko',a)}
 bLog(target.name+'に'+damage+'ダメージ！'+(critical?' ★会心の一撃！':'')+(target.hp===0?' '+target.name+'は倒れた！':''));battleEffect('damage',target,damage,critical);if(target.hp===0)battleEffect('ko',target);soulDrain(a,damage,wasAlive,target);
+if(!magic&&damage>0&&target.status?.kind==='sleep'){target.status=null;bLog(target.name+'は攻撃を受けて目を覚ました！')}
 if(target.counter&&target.hp>0&&!magic&&a.hp>0&&target!==a){target.counter=false;bLog(target.name+'の反撃！');hurt(target,a,.55,false,false)}
 }
 function fixedHurt(a,d,base){
@@ -874,7 +906,7 @@ function revive(f,n){if(f.hp>0){bLog(f.name+'は戦闘不能ではない！');re
 function heal(f,n,source=null){if(f.hp<=0)return;if(source&&source.side==='味方'&&source.i===1&&source!==f)n*=1.20;let gain=Math.min(f.maxHp-f.hp,Math.max(1,amount(n)));f.hp+=gain;bLog(f.name+'のHPが'+gain+'回復！');if(gain>0)battleEffect('heal',f,gain)}
 function useMove(f,cmd,targetIndex){
 if(f.hp<=0)return;
-battleEffect('actor',f);if(f.speciesName==='ねむりひめ'&&battle.turn%2===0){
+battleEffect('actor',f);if(statusBeforeAction(f))return;if(f.speciesName==='ねむりひめ'&&battle.turn%2===0){
  const roll=Math.random(),friends=alive(f.side);
  if(roll<.4){bLog(f.name+'の「あくび」！ 何も起こらなかった。')}
  else if(roll<.7){bLog(f.name+'の「たそがれ」！ 味方全体のMPを回復！');friends.forEach(x=>{const gain=Math.min(10,x.maxMp-x.mp);x.mp+=gain;bLog(x.name+'のMPが'+gain+'回復！')})}
@@ -1061,7 +1093,7 @@ function recordMatchResult(){
 function checkResult(){
 if(alive('敵').length===0||alive('味方').length===0){battle.phase='end';battle.result=alive('敵').length===0?'勝利！':'敗北…';recordMatchResult();if(battleMode==='arena'&&battle.result==='勝利！'){arenaWins++;saveArenaRecord()}if(battleMode==='arena'&&battle.result!=='勝利！')saveArenaRecord();bLog('対戦終了！ '+battle.result+'（牧場のモンスターは無事です）');return true}return false}
 const battleWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function copyFighter(f){return {hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit}}
+function copyFighter(f){return {hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null}}
 function restoreFighter(f,s){Object.assign(f,s)}
 function showBattleEffect(ev){
  if(!ev||!ev.side)return;
@@ -1110,7 +1142,9 @@ async function runTurn(replaySeed=null){
   if(x.f.hp<=0)continue;
   const before=battle.all.map(copyFighter),oldLogs=battle.logs.slice();
   actionEffects=[];
+  const startingStatus=x.f.status?.kind||null;
   useMove(x.f,x.cmd,x.target);
+  statusAfterAction(x.f,startingStatus);
   const events=actionEffects;actionEffects=null;
   const after=battle.all.map(copyFighter);
   battle.logs=oldLogs;
@@ -1281,8 +1315,17 @@ add('div',(battleMode==='arena'?'🏯 無限の塔 '+(arenaWins+1)+'階 / 最高
 for(const side of ['敵','味方']){
 add('div',side+'チーム',box,'mini');
 let grid=add('div','',box,'battle-grid');
-battle.all.filter(x=>x.side===side).forEach(f=>{let c=add('div','',grid,'fighter'+(f.hp<=0?' ko':''));c.dataset.side=f.side;c.dataset.index=f.i;add('b',(side==='味方'?(f.i===0?'🛡️前衛 ':'🌿後衛 '):'')+f.name,c);if(pendingTarget&&pendingTarget.side===side&&(f.hp>0||(['revive','forestrevive'].includes(pendingTarget.cmd)&&f.hp<=0))){c.classList.add('targetable');c.setAttribute('role','button');c.setAttribute('tabindex','0');c.onclick=()=>chooseAction(pendingTarget.cmd,f.i);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseAction(pendingTarget.cmd,f.i)}}}let sprite=document.createElement('canvas');sprite.width=160;sprite.height=120;sprite.setAttribute('aria-label',f.name+'の姿');c.appendChild(sprite);if(f.boss){c.classList.add('giant-boss');let art=document.createElement('div');art.className='giant-boss-art';art.textContent=f.bossEmoji||'🐉';sprite.replaceWith(art)}else drawBattleSprite(sprite,f.type,f.speciesName||f.name);add('div','',c,'effect-layer');if(f.hp<=0)add('span','戦闘不能',c,'ko-label');if(battleMode==='quest'&&f.boss){add('div',questBossHealthText(f),c,'quest-boss-state')}else{add('div','HP '+f.hp+'/'+f.maxHp,c);let bar=add('div','',c,'bar');let fill=add('i','',bar);fill.style.width=100*f.hp/f.maxHp+'%';if(f.hp/f.maxHp<=.25)fill.classList.add('low-hp')}let bar;add('div','MP '+f.mp+'/'+f.maxMp,c);bar=add('div','',c,'bar mp');let mpFill=add('i','',bar);mpFill.style.width=(f.maxMp?100*f.mp/f.maxMp:0)+'%'})}
+battle.all.filter(x=>x.side===side).forEach(f=>{let c=add('div','',grid,'fighter'+(f.hp<=0?' ko':''));c.dataset.side=f.side;c.dataset.index=f.i;add('b',(side==='味方'?(f.i===0?'🛡️前衛 ':'🌿後衛 '):'')+f.name,c);if(f.status&&STATUS_META[f.status.kind])add('span',' '+STATUS_META[f.status.kind].mark+' '+STATUS_META[f.status.kind].label+' ('+f.status.left+')',c,'badge');if(pendingTarget&&pendingTarget.side===side&&(f.hp>0||(['revive','forestrevive'].includes(pendingTarget.cmd)&&f.hp<=0))){c.classList.add('targetable');c.setAttribute('role','button');c.setAttribute('tabindex','0');c.onclick=()=>chooseAction(pendingTarget.cmd,f.i);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseAction(pendingTarget.cmd,f.i)}}}let sprite=document.createElement('canvas');sprite.width=160;sprite.height=120;sprite.setAttribute('aria-label',f.name+'の姿');c.appendChild(sprite);if(f.boss){c.classList.add('giant-boss');let art=document.createElement('div');art.className='giant-boss-art';art.textContent=f.bossEmoji||'🐉';sprite.replaceWith(art)}else drawBattleSprite(sprite,f.type,f.speciesName||f.name);add('div','',c,'effect-layer');if(f.hp<=0)add('span','戦闘不能',c,'ko-label');if(battleMode==='quest'&&f.boss){add('div',questBossHealthText(f),c,'quest-boss-state')}else{add('div','HP '+f.hp+'/'+f.maxHp,c);let bar=add('div','',c,'bar');let fill=add('i','',bar);fill.style.width=100*f.hp/f.maxHp+'%';if(f.hp/f.maxHp<=.25)fill.classList.add('low-hp')}let bar;add('div','MP '+f.mp+'/'+f.maxMp,c);bar=add('div','',c,'bar mp');let mpFill=add('i','',bar);mpFill.style.width=(f.maxMp?100*f.mp/f.maxMp:0)+'%'})}
 if(battleMode==='quest'&&questRun){add('div','🗺️ '+questRun.title+'　'+(questRun.stage+1)+'/3戦目'+(questRun.stage===2?'【ボス】':''),box,'quest-status');if(questRun.stage===2&&questRun.difficulty>=4&&battle.turn%3===0&&battle.phase==='choose')add('p','⚠️ ボスが力をためている！ このターンは強力な攻撃が来る！',box,'quest-boss-state')}
+if(battleMode==='training'&&battle.phase==='choose'){
+ const test=add('section','',box,'card');add('p','🧪 状態異常テスト（訓練限定・記録への影響なし）',test,'mini');
+ const targetSelect=add('select','',test);targetSelect.style.width='100%';
+ for(const f of battle.all.filter(x=>x.hp>0)){const opt=document.createElement('option');opt.value=f.side+':'+f.i;opt.textContent=f.side+' '+f.name;targetSelect.appendChild(opt)}
+ for(const [kind,label] of [['sleep','💤 眠り'],['burn','🔥 やけど'],['paralysis','⚡ しびれ']]){
+  btn(label,()=>{const [side,idx]=targetSelect.value.split(':');const f=battle.all.find(x=>x.side===side&&x.i===Number(idx));if(!f)return;if(!applyStatus(f,kind))bLog(f.name+'はすでに状態異常です。');storeBattle();renderBattle()},test);
+ }
+ btn('🧹 選択した個体を治す',()=>{const [side,idx]=targetSelect.value.split(':');const f=battle.all.find(x=>x.side===side&&x.i===Number(idx));if(f){f.status=null;bLog(f.name+'の状態異常を解除した。');storeBattle();renderBattle()}},test);
+}
 if(battle.phase==='choose'&&battle.spectator){
  add('p','👀 観戦モード：両チームをCPUが操作します。',box,'note');
  btn('▶ 次のターン',()=>{battle.autoSpectate=false;stopSpectatorTimer();autoQueueTurn()}).className='full primary';
