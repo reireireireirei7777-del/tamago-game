@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.1.3';
+const APP_VERSION='Ver.4.1.4';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -304,16 +304,16 @@ if(a==='猛特訓'){
  if(random(1,100)<=chance){m.injurySurvived=m.day===7;m.logs.unshift(m.day+'日目：'+m.name+'は猛特訓で怪我をした！（確率'+chance+'%）');m.lastActionComment=m.logs[0];finish(true);return}
  m.hardSuccess=(m.hardSuccess||0)+1;
  // 累計挑戦回数による全能力ボーナス。大成功時はボーナスも含め1.4倍。
- let bonus=(m.hard-1)*2,gains=keys.map(()=>boost(random(8,17)+bonus));
+ let bonus=(m.hard-1)*4,gains=keys.map(()=>boost(random(8,17)+bonus));
  m.stats=m.stats.map((x,i)=>x+gains[i]);
  msg=m.name+'は猛特訓に成功！ '+(bonus?'継続ボーナス全能力+'+bonus+'！ ':'')+'全能力 +'+gains.join('/+');
 }else if(a==='自由にさせる'){
  let idx=random(0,5),roll=random(1,100);let value=roll<=8?random(80,145):roll<=30?random(25,65):random(0,24);
  m.stats[idx]+=value;msg=m.name+'は自由に過ごした！ '+keys[idx]+' +'+value+(value>=80?' ★大当たり！':'');
 }else{
- const opts={'鍛える':[[2,5],[19,32]],'休む':[[0,5],[22,36]],'勉強する':[[1,3],[9,18]],'走る':[[4],[19,32]]};
+ const opts={'鍛える':[[2,5],[19,38]],'休む':[[0,5],[22,43]],'勉強する':[[1,3],[9,22]],'走る':[[4,0],[19,38]]};
  let [indices,range]=opts[a],gain=[];
- indices.forEach(i=>{let v=(a==='鍛える'&&i===5)?random(10,19):(a==='休む'&&i===5)?random(17,28):(a==='勉強する'&&i===3)?random(15,25):random(...range);
+ indices.forEach(i=>{let v=(a==='鍛える'&&i===5)?random(10,23):(a==='休む'&&i===5)?random(17,34):(a==='勉強する'&&i===3)?random(15,30):(a==='走る'&&i===0)?random(10,20):random(...range);
  v=boost(v);m.stats[i]+=v;gain.push(keys[i]+' +'+v)});
  msg=m.name+'は'+a+'をした！ '+gain.join(' / ');
 }
