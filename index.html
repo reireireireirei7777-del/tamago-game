@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.1.2';
+const APP_VERSION='Ver.4.1.3';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -958,7 +958,59 @@ function priority(cmd){
  if(['smash','meteor'].includes(cmd))return -20;
  return 0;
 }
+// Ver.4.1.3: 訓練・友達対戦専用の能力適応CPU。通常対戦・クエスト・塔には影響させない。
+function smartPracticeCpuCommand(f){
+ const friends=alive(f.side),foes=alive(f.side==='敵'?'味方':'敵');
+ if(!foes.length)return {f,cmd:'guard',target:f.i};
+ if(f.speciesName==='じどうはんばいき')return {f,cmd:'poisonjuice',target:foes[0].i};
+ const usable=f.moves.map(moveById).filter(m=>m&&f.mp>=m.mp);
+ const weakest=friends.slice().sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];
+ const fallen=battle.all.filter(x=>x.side===f.side&&x.hp<=0);
+ const revival=usable.find(m=>m.id==='revive'||m.id==='forestrevive');
+ if(fallen.length&&revival&&Math.random()<.88)return {f,cmd:revival.id,target:fallen[0].i};
+ const healing=['heal','spring','bubble','spirit','pulse','life','rabbitheal'];
+ const heals=usable.filter(m=>healing.includes(m.id));
+ if(weakest&&heals.length){
+  const lost=1-weakest.hp/weakest.maxHp;
+  const area=heals.find(m=>['spring','bubble','spirit'].includes(m.id));
+  const self=heals.find(m=>['pulse','life'].includes(m.id));
+  const single=heals.find(m=>['heal','rabbitheal'].includes(m.id));
+  const mpNeed=friends.some(x=>x.maxMp>=30&&x.maxMp-x.mp>=35);
+  if(area&&(lost>=.32||(area.id==='spirit'&&mpNeed))&&Math.random()<.9)return {f,cmd:area.id,target:f.i};
+  if(lost>=.4&&Math.random()<.88){
+   if(weakest===f&&self)return {f,cmd:self.id,target:f.i};
+   if(single)return {f,cmd:single.id,target:weakest.i};
+  }
+ }
+ const support=['brace','earth','guardall','guardian','reflect','counter','immortal','dream','kingroar','rockwall','manashield','ironstand'];
+ const supports=usable.filter(m=>support.includes(m.id));
+ if(battle.turn<=2&&supports.length&&Math.random()<.12){const m=supports[random(0,supports.length-1)];return {f,cmd:m.id,target:f.i}}
+ const nonAttack=new Set([...healing,...support,'revive','forestrevive']);
+ const magic=new Set(['bolt','thunder','star','spark','frost','magicwave','darkflare','arcane','judgement','witchdrain','dragonbreath','mirrorburst','birdstorm','lavaburst','rainbow','timefreeze']);
+ const physicalPower={focus:1,quick:1,double:1.6,shadow:1.1,rush:1.5,smash:1.8,sweep:1.7,meteor:2.7,pierce:1.3,armorbreak:1.6,stonewheel:2.1,jump:1.3,steel:2.2,wind:2.2,twinblade:1.8,jelslash:1.4,ninjacut:1.7,windblade:1.45,earthquake:2.3,turtleblast:2,lastblade:1.5,split:2.2,lifeblade:1.2,soulshock:1.1};
+ const magicPower={bolt:1.3,thunder:2.4,star:4.3,spark:.85,frost:1.6,magicwave:1.9,darkflare:2.25,arcane:3.8,judgement:1.9,witchdrain:1.15,dragonbreath:2.7,mirrorburst:1.9,birdstorm:2.7,lavaburst:2.7,rainbow:1.7,timefreeze:.9};
+ const target=foes.slice().sort((a,b)=>a.hp-b.hp)[0];
+ const strength=f.stats[2],wisdom=f.stats[3];
+ const basic=Math.max(1,strength*.5-target.stats[5]*.2);
+ let best={cmd:'attack',score:basic,target:target.i};
+ for(const m of usable){
+  if(nonAttack.has(m.id)||m.id==='poisonjuice')continue;
+  const isMagic=magic.has(m.id);
+  const power=isMagic?(magicPower[m.id]||1):(physicalPower[m.id]||1);
+  const attackStat=isMagic?wisdom*.58:strength*.5;
+  const defense=isMagic?target.stats[3]*.07:target.stats[5]*.2;
+  const estimated=Math.max(1,attackStat*power-defense);
+  // 全体攻撃は生存する敵の数を反映。MPを温存するため、消費に応じた控えめな減点。
+  const area=new Set(['thunder','star','magicwave','arcane','dragonbreath','mirrorburst','birdstorm','lavaburst','rainbow','rush','sweep','stonewheel','wind','earthquake']);
+  const score=estimated*(area.has(m.id)?1+.65*(foes.length-1):1)-m.mp*(f.mp/f.maxMp<.25?.6:.12);
+  if(score>best.score*1.08)best={cmd:m.id,score,target:target.i};
+ }
+ // 少しだけ判断に揺らぎを残す。魔法型の通常攻撃連発は避ける。
+ if(best.cmd!=='attack'&&Math.random()<.08&&basic>best.score*.65)return {f,cmd:'attack',target:target.i};
+ return {f,cmd:best.cmd,target:best.target};
+}
 function cpuCommand(f){
+ if(battleMode==='friend'||battleMode==='training')return smartPracticeCpuCommand(f);
  if(f.speciesName==='じどうはんばいき'){const enemies=alive(f.side==='敵'?'味方':'敵');return {f,cmd:'poisonjuice',target:enemies[0]?.i??0}}
  let friends=alive(f.side),foes=alive(f.side==='敵'?'味方':'敵');if(!foes.length)return {f,cmd:'guard',target:f.i};
  let stage=battleMode==='arena'?arenaWins+1:0;
@@ -1175,7 +1227,7 @@ let friendLastPair=null;
 const FRIEND_PREFIX='TAMAGO-FRIEND-1:';
 function friendEncode(pair){const bytes=new TextEncoder().encode(JSON.stringify({v:1,pair}));let bin='';for(const b of bytes)bin+=String.fromCharCode(b);return FRIEND_PREFIX+btoa(bin)}
 function friendDecode(code){
- if(typeof code!=='string'||code.length>12000||!code.trim().startsWith(FRIEND_PREFIX))throw Error('友達対戦コードの形式が違います。');
+ if(typeof code!=='string'||code.length>12000||!code.trim().slice(0,FRIEND_PREFIX.length).toUpperCase().startsWith(FRIEND_PREFIX))throw Error('友達対戦コードの形式が違います。');
  const raw=code.trim().slice(FRIEND_PREFIX.length);if(!/^[A-Za-z0-9+/]+={0,2}$/.test(raw))throw Error('コードに使用できない文字があります。');
  let data;try{const bin=atob(raw);const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))}catch(e){throw Error('コードを読み取れませんでした。')}
  if(!data||data.v!==1||!Array.isArray(data.pair)||data.pair.length!==2)throw Error('2匹のペア情報がありません。');
