@@ -102,7 +102,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.2.0';
+const APP_VERSION='Ver.4.2.1';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -1463,7 +1463,7 @@ function renderMaster(){
  else for(const [id,count] of entries){const row=document.createElement('div');row.className='roster-item';row.textContent=id+'　× '+Math.floor(Number(count))+'個';$('master-items').appendChild(row)}
 }
 // Ver.3.6.1 モンスター図鑑。進化候補の定義を元に全種族を列挙する。
-const dexNames=[...new Set([...species.map(v=>v[0]),...branches.flat().map(v=>v[0]),...extraEvo.map(v=>v.name),...newEvolutions.map(v=>v.name),'闇のぴょこ',...Object.keys(rareSpecs)])];
+const dexNames=[...new Set([...species.map(v=>v[0]),...branches.flat().map(v=>v[0]),...extraEvo.map(v=>v.name),...Object.keys(rareSpecs),...newEvolutions.map(v=>v.name),'闇のぴょこ'])];
 const dexLore={
 'アクビ':'大きなあくびで敵も味方も眠らせる。自分だけは眠らない。',
 'デスリス':'偶数ターンに身をかわす黒いリス。',
