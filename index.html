@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.4.0.6</title><style>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.4.2.6 ストーリー第1話</title><style>
 *{box-sizing:border-box}body{margin:0;background:#dce6d4;color:#253d2e;font-family:-apple-system,BlinkMacSystemFont,sans-serif}main{max-width:450px;margin:auto;padding:7px 9px 35px}h1{font-size:19px;margin:2px 0}.sub,.note{font-size:11px;line-height:1.35}.sub{margin-bottom:4px}.card{background:#f5f8ec;border:2px solid #405b44;border-radius:11px;padding:8px;margin:6px 0;box-shadow:2px 2px 0 #afc2a7}.row{display:flex;justify-content:space-between;gap:6px;align-items:center}.badge{font-size:11px;background:#d9e8cf;border-radius:5px;padding:3px 5px}.lcd{height:95px;background:#b4c99f;border:3px solid #415a42;border-radius:7px;display:grid;place-items:center;margin-top:5px}canvas{width:85px;height:85px;image-rendering:pixelated}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.stat{background:#e3edd9;padding:5px 6px;border-radius:5px;font-size:12px;display:flex;justify-content:space-between;gap:3px}.buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}button{min-height:38px;border:2px solid #39513e;border-radius:7px;background:#dceccf;font-size:13px;font-weight:700;color:#263d2d}button:active{background:#b7d5a3}.risk{background:#f0d5c6}.primary{background:#a7d18e}.log{font-size:12px;line-height:1.6;max-height:170px;overflow:auto;white-space:pre-wrap}h2{font-size:14px;margin:0 0 5px}details{margin:5px 0;padding:5px;background:#e6efdd;border-radius:5px;font-size:13px}summary{font-weight:700;cursor:pointer}.full{width:100%;margin-top:8px}.comment{background:#e3edd9;border-left:4px solid #6d8e65;padding:7px 8px;font-size:12px;line-height:1.4;border-radius:4px;min-height:33px}.comment strong{font-weight:700}.comment{white-space:pre-wrap}.hint{margin:5px 0 0}.move-option{display:flex;gap:7px;align-items:center;padding:6px 4px;border-bottom:1px solid #cbd9c4;font-size:12px}.move-option input{width:19px;height:19px;flex:none}.move-option small{display:block;color:#536d58}.evolution-choice{display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #cbd9c4}.evolution-sprite{width:66px;height:66px;flex:none;background:#b4c99f;border:2px solid #405b44;border-radius:5px}.evolution-info{min-width:0;flex:1;font-size:12px}.evolution-info button{width:100%;margin-top:5px}.evolution-info .mini{line-height:1.6}.roster-item{border:1px solid #b2c7a9;border-radius:7px;padding:7px;margin:6px 0;font-size:12px}.roster-item .row{margin-bottom:4px}.tag{background:#d8e8cb;border-radius:4px;padding:2px 5px}.mini{font-size:11px}.compact-head{font-size:14px}.stats-card{padding:7px 8px}.comment-card{padding:7px 8px}
 @media(max-height:700px){main{padding-top:4px}.sub{display:none}.lcd{height:76px}canvas{width:69px;height:69px}.card{margin:4px 0;padding:6px}.stats-card,.comment-card{padding:5px 7px}button{min-height:34px}.buttons{gap:4px}h2{margin-bottom:3px}.stat{padding:4px 5px}.hint{display:none}}
 #battle-ui .battle-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0}#battle-ui .fighter{background:#e3edd9;border:1px solid #a5bea0;border-radius:6px;padding:6px;font-size:11px}#battle-ui .fighter b{font-size:13px}#battle-ui .bar{height:8px;background:#c9c9c1;border-radius:5px;overflow:hidden;margin:4px 0}#battle-ui .bar i{display:block;height:100%;background:#5a9565}#battle-ui .bar.mp i{background:#6589ab}#battle-ui .battle-log{white-space:pre-wrap;font-size:12px;max-height:210px;overflow:auto;background:#e3edd9;border-radius:5px;padding:7px;margin:7px 0}#battle-ui .battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}#battle-ui button{font-size:12px}#battle-ui .selected{background:#a7d18e}#battle-ui .fighter.ko{opacity:.45}
@@ -91,6 +91,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 #battle-ui .move-explain-btn .move-title{font-weight:700;font-size:12px}
 #battle-ui .move-explain-btn .move-detail{font-size:10px;font-weight:400;opacity:.9;overflow-wrap:anywhere}
 #battle-ui .move-explain-btn:disabled{opacity:.65}
+#story-screen{position:fixed;inset:0;background:#e5ecdd;z-index:90;overflow:auto;padding:12px 10px 35px}#story-screen .quest-shell{max-width:450px;margin:auto}.story-dialogue{white-space:pre-wrap;line-height:1.85;font-size:15px;padding:16px 12px;background:#fffdf3;border:2px solid #647b58;border-radius:10px;min-height:150px;margin:12px 0}.story-speaker{font-weight:800;color:#30563d}.story-progress{font-size:12px;color:#536653}.story-actions{display:grid;gap:8px;margin-top:12px}
 </style></head><body><main><h1>🥚 たまご育成 <span class="badge" id="main-version"></span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
 <section class="card"><div class="row"><strong id="name">はじめての卵</strong><span id="day" class="badge">待機中</span></div><div class="lcd"><canvas id="sprite" width="160" height="120"></canvas></div><div class="row" style="margin-top:9px"><span id="status">卵を孵化させよう</span><span id="count" class="badge"></span></div><div id="hatch-omen" class="hatch-omen" hidden aria-live="polite"></div></section>
 <section class="card stats-card"><h2>能力値</h2><div id="stats" class="stats"></div></section>
@@ -100,6 +101,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <section class="card"><h2>🐾 牧場・チーム編成</h2><div id="team-summary" class="note"></div><button id="open-farm" class="full primary">🐾 牧場を開く・チーム編成</button></section>
 <section class="card"><h2>📖 モンスター図鑑</h2><div id="dex-summary" class="note"></div><button id="open-dex" class="full primary">📖 図鑑を開く</button></section>
 <section class="card"><h2>🗺️ 日替わりクエスト</h2><p class="note">毎朝4時更新・1日5件。3連戦でHP・MPを引き継ぎます。</p><button id="open-quests" class="full primary">⚔️ クエストを開く</button><div id="quest-summary" class="note"></div></section>
+<section class="card"><h2>📜 ストーリーモード</h2><p class="note">第1話「招かれざる招待状」公開中。アイザックと共闘する2連戦です。</p><button id="open-story" class="full primary">📜 話数を選ぶ</button><div id="story-summary" class="note"></div></section>
 <section class="card"><h2>👑 マスター</h2><div id="master-summary" class="note"></div><button id="open-master" class="full primary">👑 マスター情報・持ち物</button></section>
 <section class="card" id="battle-card"><h2>⚔️ CPU対戦</h2><p class="note">左：前衛（物理攻撃＋10％・被狙い70％）／右：後衛（味方回復＋20％・被狙い30％）。</p><button id="open-battle" class="full primary">⚔️ 対戦画面を開く</button><div id="arena-record" class="note" style="margin-top:7px"></div></section>
 <section class="card"><h2>歴代記録</h2><div id="records"></div><button class="full" id="backup">記録をバックアップ（JSON）</button><p class="note">記録はこのブラウザ内に保存。消去・機種変更に備えてバックアップしてください。</p></section>
@@ -108,6 +110,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div id="breeding-result-screen" hidden role="dialog" aria-modal="true" aria-labelledby="breeding-result-title"><div class="card"><h2 id="breeding-result-title"></h2><div id="breeding-result-detail"></div><button id="breeding-result-close" type="button" class="primary full">閉じる</button></div></div>
 <div id="register-confirm-screen" hidden role="dialog" aria-modal="true" aria-labelledby="register-confirm-title"><div class="card"><h2 id="register-confirm-title">🥚 牧場への登録確認</h2><div id="register-confirm-detail"></div><button id="register-confirm-yes" class="primary" type="button">🌱 このモンスターを牧場に登録する</button><button id="register-confirm-edit" type="button">↩ 特技を選び直す</button></div></div>
 <div id="quest-screen" hidden><div class="quest-shell"><div class="row"><h2>🗺️ 日替わりクエスト</h2><button id="quest-back" type="button">育成に戻る</button></div><p class="note">毎朝4時（日本時間）に5件更新。クリア済みは当日再挑戦できません。開始済みの3連戦は日付をまたいでも続行できます。</p><div id="quest-list"></div><button id="quest-abort" type="button" class="risk full" hidden>🛑 進行中のクエストを中断する</button><p class="note">中断しても牧場・育成履歴・図鑑・クエストクリア実績は消えません。</p><div id="quest-party" class="card" hidden></div></div></div>
+<div id="story-screen" hidden><div class="quest-shell"><div class="row"><h2>📜 ストーリーモード</h2><button id="story-back" type="button">育成に戻る</button></div><div id="story-content" class="card"></div></div></div>
 <div id="master-screen" hidden><div class="master-shell"><div class="row"><h2>👑 マスター</h2><button id="master-back" type="button">育成に戻る</button></div>
 <section class="card"><h2>プロフィール</h2><div class="row"><strong id="master-name-display"></strong><button id="master-rename" type="button">✏️ 名前を変更</button></div><div id="master-records" class="master-records"></div><p class="note">過去の戦闘回数など、旧バージョンで保存されていない記録は復元できません。</p></section>
 <section class="card"><h2>🏆 クエスト実績・称号</h2><div id="quest-master-stats"></div></section>
@@ -117,7 +120,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.2.5';
+const APP_VERSION='Ver.4.2.6';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -606,7 +609,7 @@ function syncRegistrationLock(){
  const locked=breedingRegistrationPending();
  const main=document.querySelector('main');
  main.classList.toggle('registration-locked',locked);
- ['open-farm','open-dex','open-master','open-battle','open-quests','backup'].forEach(id=>{
+ ['open-farm','open-dex','open-master','open-battle','open-quests','open-story','backup'].forEach(id=>{
   const b=$(id);if(!b)return;
   b.disabled=locked;
   b.setAttribute('aria-disabled',String(locked));
@@ -671,7 +674,7 @@ function draw(){if(!m||m.phase==='done'){drawMonsterSprite($('sprite'),0,'はじ
 function openBattle(){$('battle-emergency-abort').hidden=!(battleMode==='quest'&&questRun);document.getElementById('battle-screen').hidden=false;document.body.classList.add('in-battle');renderBattle();document.getElementById('battle-screen').scrollTop=0}
 function closeBattle(){pendingTarget=null;document.getElementById('battle-screen').hidden=true;document.body.classList.remove('in-battle')}
 $('open-battle').onclick=()=>{if(breedingRegistrationPending())return;openBattle()};
-$('battle-back').onclick=()=>{if(battleMode==='quest'&&questRun){storeBattle();closeBattle();openQuestScreen();return}if(battleMode==='arena'&&battle){alert('無限の塔では「撤退して記録を残す」を使ってください。');return}if(battle&&battle.phase!=='end'&&!confirm('対戦画面を閉じますか？（戦闘は続きから再開できます）'))return;storeBattle();closeBattle()};
+$('battle-back').onclick=()=>{if(battleMode==='story'&&storyRun){storeBattle();closeBattle();openStoryScreen();return}if(battleMode==='quest'&&questRun){storeBattle();closeBattle();openQuestScreen();return}if(battleMode==='arena'&&battle){alert('無限の塔では「撤退して記録を残す」を使ってください。');return}if(battle&&battle.phase!=='end'&&!confirm('対戦画面を閉じますか？（戦闘は続きから再開できます）'))return;storeBattle();closeBattle()};
 function drawBattleSprite(canvas,t,name){drawMonsterSprite(canvas,t,name)}
 // Ver.3.5.4: 対戦状態は一時保存。牧場の能力値・特技・育成記録は変更しない。
 let battle=null;
@@ -698,12 +701,14 @@ function storeBattle(snapshot=null){
 function restoreBattle(){
  let saved;try{saved=JSON.parse(localStorage.getItem(battleKey)||'null')}catch(e){return}
  if(!saved||saved.version!==1||!saved.battle||!Array.isArray(saved.battle.all))return;
+ if(saved.mode==='story' && (!storyRun || storyRun.phase!=='battle')){localStorage.removeItem(battleKey);return;}
  if(saved.mode==='quest' && (!questRun || !Array.isArray(questRun.partyIds) || questRun.partyIds.length!==2 || !Number.isInteger(questRun.stage) || questRun.stage<0 || questRun.stage>2)){localStorage.removeItem(battleKey);return;}
  if(saved.mode==='quest' && (!saved.battle.all.every(f=>f&&Array.isArray(f.stats)&&Number.isFinite(f.hp)&&Number.isFinite(f.mp)) || !Array.isArray(saved.battle.queue))){localStorage.removeItem(battleKey);return;}
  battleMode=saved.mode||'normal';arenaWins=saved.wins||0;
  battle=saved.battle;
  battle.queue=(battle.queue||[]).map(q=>({...q,f:battle.all.find(f=>f.side===q.side&&f.i===q.i)})).filter(q=>q.f);
  arenaParty=battleMode==='arena'?battle.all.filter(f=>f.side==='味方'):null;
+ if(battleMode==='story'&&!storyRun){battle=null;storeBattle();return}
  if(battleMode==='quest'&&!questRun){battle=null;storeBattle();return}
  try{openBattle()}catch(e){console.warn('保存済み戦闘を開けません',e);battle=null;localStorage.removeItem(battleKey);closeBattle();return}
  if(battle.phase==='running'){
@@ -1144,7 +1149,7 @@ battle.all.forEach(x=>{x.shield=false;x.cover=false;x.counter=false});
 battle.turn++;battle.queue=[];battle.phase='choose';bLog('―― '+battle.turn+'ターン目 ――');
 }
 function recordMatchResult(){
- if(!battle||!battle.resultKey||battleMode==='friend'||battleMode==='training')return;
+ if(!battle||!battle.resultKey||battleMode==='friend'||battleMode==='training'||battleMode==='story')return;
  state.matchResultIds=Array.isArray(state.matchResultIds)?state.matchResultIds:[];
  if(state.matchResultIds.includes(battle.resultKey))return;
  const won=battle.result==='勝利！';
@@ -1379,6 +1384,7 @@ function renderFriendMenu(box,add,btn){
  const start=btn('⚔️ 友達のペアに挑戦',()=>{try{startFriendBattle(friendDecode(input.value),watchCheck.checked)}catch(err){alert(err.message)}},section);start.className='full primary';start.disabled=state.team.length!==2||sameSpeciesTeam();
 }
 function renderBattle(){
+if(battleMode==='story'&&battle&&battle.phase==='choose'&&!battle.spectator){const front=battle.all.find(f=>f.side==='味方'&&f.i===0&&f.hp>0);if(front&&!battle.queue.some(q=>q.f.side==='味方'&&q.f.i===0)){battle.queue.unshift(cpuCommand(front));storeBattle()}}
 if(!battle||battle.phase!=='choose'||!battle.spectator||!battle.autoSpectate)stopSpectatorTimer();
 let box=$('battle-ui');if(!box)return;box.replaceChildren();
 const add=(tag,text,parent=box,cls='')=>{let el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;parent.appendChild(el);return el};
@@ -1389,6 +1395,7 @@ for(const side of ['敵','味方']){
 add('div',side+'チーム',box,'mini');
 let grid=add('div','',box,'battle-grid');
 battle.all.filter(x=>x.side===side).forEach(f=>{let c=add('div','',grid,'fighter'+(f.hp<=0?' ko':''));c.dataset.side=f.side;c.dataset.index=f.i;add('b',(side==='味方'?(f.i===0?'🛡️前衛 ':'🌿後衛 '):'')+f.name,c);if(f.status&&STATUS_META[f.status.kind])add('span',' '+STATUS_META[f.status.kind].mark+' '+STATUS_META[f.status.kind].label+' ('+f.status.left+')',c,'badge');if(pendingTarget&&pendingTarget.side===side&&(f.hp>0||(['revive','forestrevive'].includes(pendingTarget.cmd)&&f.hp<=0))){c.classList.add('targetable');c.setAttribute('role','button');c.setAttribute('tabindex','0');c.onclick=()=>chooseAction(pendingTarget.cmd,f.i);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseAction(pendingTarget.cmd,f.i)}}}let sprite=document.createElement('canvas');sprite.width=160;sprite.height=120;sprite.setAttribute('aria-label',f.name+'の姿');c.appendChild(sprite);if(f.boss){c.classList.add('giant-boss');let art=document.createElement('div');art.className='giant-boss-art';art.textContent=f.bossEmoji||'🐉';sprite.replaceWith(art)}else drawBattleSprite(sprite,f.type,f.speciesName||f.name);add('div','',c,'effect-layer');if(f.hp<=0)add('span','戦闘不能',c,'ko-label');if(battleMode==='quest'&&f.boss){add('div',questBossHealthText(f),c,'quest-boss-state')}else{add('div','HP '+f.hp+'/'+f.maxHp,c);let bar=add('div','',c,'bar');let fill=add('i','',bar);fill.style.width=100*f.hp/f.maxHp+'%';if(f.hp/f.maxHp<=.25)fill.classList.add('low-hp')}let bar;add('div','MP '+f.mp+'/'+f.maxMp,c);bar=add('div','',c,'bar mp');let mpFill=add('i','',bar);mpFill.style.width=(f.maxMp?100*f.mp/f.maxMp:0)+'%'})}
+if(battleMode==='story'&&storyRun)add('div','📜 第1話　'+(storyRun.stage+1)+'/2戦目　前衛アイザックは自動操作',box,'quest-status');
 if(battleMode==='quest'&&questRun){add('div','🗺️ '+questRun.title+'　'+(questRun.stage+1)+'/3戦目'+(questRun.stage===2?'【ボス】':''),box,'quest-status');if(questRun.stage===2&&questRun.difficulty>=4&&battle.turn%3===0&&battle.phase==='choose')add('p','⚠️ ボスが力をためている！ このターンは強力な攻撃が来る！',box,'quest-boss-state')}
 if(battleMode==='training'&&battle.phase==='choose'){
  const test=add('section','',box,'card');add('p','🧪 状態異常テスト（訓練限定・記録への影響なし）',test,'mini');
@@ -1426,9 +1433,9 @@ if(battle.queue.length){btn('行動選択を最初からやり直す',()=>{battl
 if((battleMode==='friend'||battleMode==='training')&&battle.phase==='end')add('p',(battleMode==='training'?'🏋️ 訓練の結果：':'🤝 友達対戦の結果：')+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
 let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
-if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
+if(battleMode==='story'&&battle.phase==='end'){btn(battle.result==='勝利！'?'▶ 物語を続ける':'↩ 第'+(storyRun?.stage+1||1)+'戦に再挑戦',storyBattleAdvance).className='full primary'}else if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
 if(battleMode==='arena'&&battle.phase==='choose')btn('🏁 撤退して記録を残す',retireArena).className='full';
-if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
+if(battleMode==='story'){btn('📜 ストーリーに戻る',()=>{storeBattle();closeBattle();openStoryScreen()}).className='full'}else if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena'&&battleMode!=='story')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
 else if(battle.phase==='end'&&battle.result!=='勝利！')btn('育成画面に戻る',()=>{battle=null;storeBattle();closeBattle();renderBattle()}).className='full';
 }
 
@@ -1656,6 +1663,65 @@ $('master-rename').onclick=()=>{const name=prompt('マスター名を入力し�
 $('farm-search').addEventListener('input',renderRoster);$('farm-sort').addEventListener('change',renderRoster);
 $('open-farm').onclick=()=>{if(breedingRegistrationPending())return;renderRoster();$('farm-screen').hidden=false;document.body.classList.add('in-farm');$('farm-screen').scrollTop=0};
 $('farm-back').onclick=()=>{$('farm-screen').hidden=true;document.body.classList.remove('in-farm')};
+
+// ストーリーモード第1話：進行状況は本体・クエストと独立して保存。
+const storyKey='tamago_story_v1';
+let storyData={cleared:[],run:null};
+try{let v=JSON.parse(localStorage.getItem(storyKey)||'null');if(v&&typeof v==='object'){storyData.cleared=Array.isArray(v.cleared)?v.cleared:[];storyData.run=v.run||null}}catch(e){}
+let storyRun=storyData.run;
+function storySave(){storyData.run=storyRun;try{localStorage.setItem(storyKey,JSON.stringify(storyData))}catch(e){console.warn(e)}renderStorySummary()}
+function renderStorySummary(){let el=$('story-summary');if(el)el.textContent=storyRun?'第1話を進行中（'+(storyRun.phase==='battle'?'第'+(storyRun.stage+1)+'戦':'会話')+'）':storyData.cleared.includes(1)?'🏆 第1話クリア済み':'第1話から開始できます'}
+const storyIntro=[
+['語り','ヤマハ大陸の片隅、イルカ島。\n祖母が遺した「星のカケラ」を手に、あなたはマスターとして歩き始めた。'],
+['語り','ある街の広場。人だかりの向こうから、怒鳴り声が聞こえる。'],
+['チンピラA','おいおい、こっちのモンスターが通るんだ。道を空けろよ！'],
+['チンピラB','兄貴に逆らうってんなら、勝負してもらおうか！'],
+['？？？','おい。街の人を巻き込むな。モンスターは脅しに使うものじゃない。'],
+['チンピラA','なんだてめえ！ そこのお前も、こいつの仲間か？'],
+['アイザック','……どうやら、そういうことにされたらしいな。俺はアイザック。\n前衛は俺の「疾風の剣士」が引き受ける。君は後ろを頼む！'],
+['語り','チンピラAがモンスターを2体繰り出した！']
+];
+const storyMiddle=[
+['チンピラA','う、嘘だろ……俺のモンスターが！'],
+['チンピラB','兄貴、下がって！ 今度は俺が相手だ！'],
+['アイザック','まだやるのか。……よし、もうひと踏ん張りだ！'],
+['語り','チンピラBがモンスターを2体繰り出した！']
+];
+const storyEnding=[
+['チンピラB','くそっ、覚えてろよ！'],
+['語り','二人組は逃げていった。広場にようやく静けさが戻る。'],
+['アイザック','助かったよ。俺は生物学者で、モンスターの研究をしているんだ。\nまたどこかで会おう！'],
+['語り','数日後。あなたのもとに、金の紋章で封じられた一通の手紙が届く。'],
+['招待状','闇の大会へのご招待\n出場予定のマスター二名が、貴殿らとの戦闘により出場不能となりました。\nつきましては欠員補充のため、貴殿の出場を決定いたしました。\nなお、辞退は認められません。'],
+['語り','差出人は、大会を主催する貴族たち。名前も住所も、なぜか正確に記されている。'],
+['語り','指定された集合場所には、見覚えのある男がいた。'],
+['アイザック','やっぱり君も呼ばれたか。俺にも同じ招待状が届いたよ。\n闇の大会……優勝賞品は「黒い星のカケラ」だという。'],
+['アイザック','あれから生まれるという「ボス」には、研究者として興味がある。\n脅されて出るのは気に食わないが、せっかくだ。調べてみるさ。'],
+['語り','会場では、着飾った貴族たちがモンスターの勝敗に賭け、笑い声を上げている。'],
+['アイザック','どうやら俺たちは別々の山に入ったらしい。\n……じゃあ、決勝で会おうぜ！'],
+['語り','こうして、あなたの闇の大会が始まった。']
+];
+function openStoryScreen(){if(breedingRegistrationPending()){syncRegistrationLock();return}closeBattle();$('story-screen').hidden=false;document.body.classList.add('in-story');renderStory();$('story-screen').scrollTop=0}
+function closeStoryScreen(){$('story-screen').hidden=true;document.body.classList.remove('in-story')}
+function storyButton(box,label,fn,primary=false){let b=document.createElement('button');b.textContent=label;b.className='full'+(primary?' primary':'');b.onclick=fn;box.appendChild(b);return b}
+function renderStory(){let box=$('story-content');box.replaceChildren();let h=document.createElement('h3');h.textContent='第1話　招かれざる招待状';box.appendChild(h);
+if(!storyRun){let p=document.createElement('p');p.className='note';p.textContent='街で出会ったアイザックと共に、2人組のチンピラマスターを退治する。前衛はアイザック（CPU）、後衛は自分のモンスター。';box.appendChild(p);storyButton(box,storyData.cleared.includes(1)?'▶ 第1話をもう一度遊ぶ':'▶ 第1話を始める',storyPickMonster,true);let later=document.createElement('p');later.className='note';later.textContent='第2話以降：準備中';box.appendChild(later);return}
+if(storyRun.phase==='battle'){let p=document.createElement('p');p.textContent='⚔️ 第'+(storyRun.stage+1)+'戦：チンピラマスター'+(storyRun.stage===0?'A':'B')+'（敵2体）';box.appendChild(p);storyButton(box,battle&&battleMode==='story'?'▶ 戦闘を再開':'⚔️ 戦闘開始',()=>{closeStoryScreen();if(battle&&battleMode==='story')openBattle();else storyStartBattle()},true);storyButton(box,'育成に戻る',closeStoryScreen);return}
+let lines=storyRun.phase==='intro'?storyIntro:storyRun.phase==='middle'?storyMiddle:storyEnding;
+let index=Math.max(0,Math.min(lines.length-1,storyRun.line||0));let entry=lines[index];let p=document.createElement('p');p.className='story-progress';p.textContent=(storyRun.phase==='intro'?'開幕':storyRun.phase==='middle'?'第1戦のあと':'戦闘のあと')+'　'+(index+1)+' / '+lines.length;box.appendChild(p);let who=document.createElement('div');who.className='story-speaker';who.textContent=entry[0]==='語り'?'📖 '+entry[0]:entry[0];box.appendChild(who);let dialogue=document.createElement('div');dialogue.className='story-dialogue';dialogue.textContent=entry[1];box.appendChild(dialogue);
+storyButton(box,index===lines.length-1?(storyRun.phase==='ending'?'🏆 第1話クリア':'⚔️ 戦闘へ'):'次へ ▶',()=>{if(index<lines.length-1){storyRun.line=index+1;storySave();renderStory()}else if(storyRun.phase==='ending'){storyData.cleared=[...new Set([...storyData.cleared,1])];storyRun=null;storySave();renderStory();alert('🏆 第1話クリア！')}else{storyRun.phase='battle';storyRun.line=0;storySave();renderStory();storyStartBattle()}},true);
+if(index>0)storyButton(box,'◀ 前の会話',()=>{storyRun.line--;storySave();renderStory()});storyButton(box,'育成に戻る（進行保存）',closeStoryScreen)
+}
+function storyPickMonster(){if(questRun){alert('日替わりクエストを終了してから開始してください。');return}if(battle&&battle.phase!=='end'){alert('進行中の対戦を終了してから開始してください。');return}let box=$('story-content');box.replaceChildren();let h=document.createElement('h3');h.textContent='🌿 共闘する後衛を選択';box.appendChild(h);let p=document.createElement('p');p.className='note';p.textContent='前衛はアイザックの「疾風の剣士」で固定（自動操作）。自分の牧場から後衛1体を選びます。';box.appendChild(p);let select=document.createElement('select');select.style.width='100%';for(let mon of state.roster){let opt=document.createElement('option');opt.value=mon.id;opt.textContent=(mon.nickname||mon.name)+' #'+mon.id;select.appendChild(opt)}box.appendChild(select);let b=storyButton(box,'このモンスターで始める',()=>{let mon=state.roster.find(x=>String(x.id)===select.value);if(!mon){alert('牧場にモンスターを登録してください。');return}storyRun={episode:1,phase:'intro',stage:0,line:0,monsterId:mon.id};storySave();renderStory()},true);b.disabled=!state.roster.length;storyButton(box,'戻る',renderStory)}
+function storyStartBattle(){if(!storyRun||storyRun.phase!=='battle')return;let mon=state.roster.find(x=>x.id===storyRun.monsterId);if(!mon){alert('後衛モンスターが牧場に見つかりません。');return}if(battle&&battleMode!=='story'&&battle.phase!=='end'){alert('別の戦闘が進行中です。');return}
+let player=mkF(mon,'味方',1);let st=player.stats;let power=storyRun.stage===0?.72:.9;
+let knight={id:-6001,name:'疾風の剣士',speciesName:'疾風の剣士',type:1,stats:[Math.max(110,Math.round(st[0]*1.5)),Math.max(90,Math.round(st[1]*1.5)),Math.max(90,Math.round(st[2]*1.45)),Math.max(65,Math.round(st[3]*1.1)),Math.max(100,Math.round(st[4]*1.5)),Math.max(80,Math.round(st[5]*1.3))],moves:['quick','windblade','smash','brace'].filter(id=>moveById(id))};
+let enemies=[0,1].map(i=>({id:-6100-storyRun.stage*2-i,name:(storyRun.stage===0?['チンピラの突撃獣','チンピラの魔法獣']:['子分の暴れ獣','子分の影獣'])[i],speciesName:i===0?'ごつん':'ぷるん',type:i===0?2:0,stats:st.map((v,j)=>Math.max(j===1?30:35,Math.round(v*power*(i===0?1.05:.95)))),moves:i===0?['smash','brace','focus']:['bolt','quick','focus']}));
+let ally=[mkF(knight,'味方',0),player];let foe=enemies.map((x,i)=>mkF(x,'敵',i));battleSequence++;pendingTarget=null;battleMode='story';battle={resultKey:'story1-'+storyRun.stage+'-'+Date.now(),all:[...ally,...foe],turn:1,queue:[],phase:'choose',logs:['📜 第1話　第'+(storyRun.stage+1)+'/2戦！','アイザックの疾風の剣士は自動で行動します。後衛の指示を出してください。'],result:null};closeStoryScreen();openBattle();storeBattle()}
+function storyBattleAdvance(){if(!storyRun||!battle||battleMode!=='story'||battle.phase!=='end')return;let win=battle.result==='勝利！';battleSequence++;battle=null;storeBattle();closeBattle();if(win){storyRun.phase=storyRun.stage===0?'middle':'ending';if(storyRun.stage===0)storyRun.stage=1;storyRun.line=0;storySave();openStoryScreen()}else{storySave();openStoryScreen();alert('もう一度挑戦できます。')}}
+$('open-story').onclick=()=>{if(breedingRegistrationPending())return;openStoryScreen()};$('story-back').onclick=closeStoryScreen;
+renderStorySummary();
+
 updateArenaRecord();save();initQuests();restoreBattle();renderMaster();renderDex();$('backup').onclick=()=>{if(breedingRegistrationPending())return;let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='たまご育成_バックアップ.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};render();
 })();
 </script><section id="replace-screen" hidden><div class="replace-shell"><div class="card"><h2>🥚 同じ種族が牧場にいます</h2><p class="note">能力・特技・勝利数を比較して、牧場に残す1体を選んでください。選択後に最終確認があります。</p><div id="replace-grid" class="compare-grid"></div><div class="replace-buttons"><button id="replace-keep">🏡 既存の個体を残す</button><button id="replace-new" class="primary">🥚 新しい個体に入れ替える</button><button id="replace-evolution" class="primary">↩ 進化先の種族選択に戻る</button><button id="replace-back">↩ 特技選択に戻る</button></div></div></div></section></body></html>
