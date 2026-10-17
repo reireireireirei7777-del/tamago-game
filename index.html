@@ -130,7 +130,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.2.6';
+const APP_VERSION='Ver.4.3.4';
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
 const species=[['ぷるん',[38,15,18,18,18,18]],['ぴょこ',[34,17,16,17,24,14]],['ごつん',[43,12,24,14,14,25]]];
@@ -1445,7 +1445,15 @@ let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
 if(battleMode==='story'&&battle.phase==='end'){btn(battle.result==='勝利！'?'▶ 物語を続ける':'↩ 第'+(storyRun?.stage+1||1)+'戦に再挑戦',storyBattleAdvance).className='full primary'}else if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
 if(battleMode==='arena'&&battle.phase==='choose')btn('🏁 撤退して記録を残す',retireArena).className='full';
-if(battleMode==='story'){btn('📜 ストーリーに戻る',()=>{storeBattle();closeBattle();openStoryScreen()}).className='full'}else if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena'&&battleMode!=='story')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
+if(battleMode==='story'){
+ btn('📜 ストーリーに戻る',()=>{storeBattle();closeBattle();openStoryScreen()}).className='full';
+ btn('🚪 戦闘を中断して育成に戻る',()=>{
+  if(!confirm('現在の戦闘を中断しますか？\n育成データとストーリーの進行は残り、この戦闘は最初から再挑戦できます。'))return;
+  battleSequence++;battle=null;pendingTarget=null;storeBattle();closeBattle();closeStoryScreen();
+  if(storyRun){storyRun.phase='battle';storySave()}
+  renderBattle();
+ }).className='full';
+}else if(battleMode==='quest'){btn('🗺️ クエスト画面に戻る',()=>{storeBattle();closeBattle();openQuestScreen()}).className='full'}else if(battleMode!=='arena'&&battleMode!=='story')btn('対戦を終了する',()=>{if(confirm('対戦を終了しますか？')){battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}}).className='full';
 else if(battle.phase==='end'&&battle.result!=='勝利！')btn('育成画面に戻る',()=>{battle=null;storeBattle();closeBattle();renderBattle()}).className='full';
 }
 
