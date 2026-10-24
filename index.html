@@ -128,7 +128,7 @@ main.registration-locked > section.card:has(#backup) button{cursor:not-allowed}
 <div id="master-screen" hidden><div class="master-shell"><div class="row"><h2>👑 マスター</h2><button id="master-back" type="button">育成に戻る</button></div>
 <section class="card"><h2>プロフィール</h2><div class="row"><strong id="master-name-display"></strong><button id="master-rename" type="button">✏️ 名前を変更</button></div><div id="master-records" class="master-records"></div><p class="note">過去の戦闘回数など、旧バージョンで保存されていない記録は復元できません。</p></section>
 <section class="card"><h2>🏆 クエスト実績・称号</h2><div id="quest-master-stats"></div></section>
-<section class="card"><h2>🎒 アイテム管理</h2><p class="note">育成アイテムは育成中のモンスターに1日1個使用できます。装備・戦闘アイテムの使用と報酬獲得は今後追加します。</p><div class="item-tabs" id="master-item-tabs"><button type="button" data-item-tab="training" class="selected">🥣 育成</button><button type="button" data-item-tab="equipment">⚔️ 装備</button><button type="button" data-item-tab="battle">🌿 戦闘</button></div><div id="master-items"></div></section></div></div>
+<section class="card"><h2>🎒 アイテム管理</h2><p class="note">育成アイテムは育成画面から使用できます。ここでは所持品を確認できます。装備・戦闘アイテムの使用と報酬獲得は今後追加します。</p><div class="item-tabs" id="master-item-tabs"><button type="button" data-item-tab="training" class="selected">🥣 育成</button><button type="button" data-item-tab="equipment">⚔️ 装備</button><button type="button" data-item-tab="battle">🌿 戦闘</button></div><div id="master-items"></div></section></div></div>
 <div id="dex-screen" hidden><div class="dex-shell"><div class="row"><h2>📖 モンスター図鑑</h2><button id="dex-back" type="button">育成に戻る</button></div><section class="card"><div id="dex-count" class="dex-progress"></div><div class="dex-meter"><i id="dex-meter-bar"></i></div><p class="note">一度でも牧場に登録した種族を記録します。放牧しても発見記録は消えません。</p><div id="dex-grid" class="dex-grid"></div><div id="dex-detail" class="dex-detail" hidden></div></section></div></div>
 <div id="farm-screen" hidden><div class="farm-shell"><div class="row"><h2>🐾 牧場・チーム編成</h2><button id="farm-back" type="button">育成に戻る</button></div><section class="card"><div id="team-info" class="note"></div><div class="farm-tools"><input id="farm-search" type="search" placeholder="名前・ニックネーム・種類・特技・番号で検索" autocomplete="off" aria-label="牧場を検索"><select id="farm-sort" aria-label="並べ替え"><option value="new">新しい順</option><option value="old">古い順</option><option value="sum">総合能力が高い順</option><option value="hp">HPが高い順</option><option value="mp">MPが高い順</option><option value="atk">力が高い順</option><option value="int">賢さが高い順</option><option value="spd">素早さが高い順</option><option value="def">防御が高い順</option></select></div><div id="farm-count" class="note"></div><div id="roster"></div></section></div></div><div id="battle-screen" hidden><div class="battle-shell">
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
@@ -1663,27 +1663,19 @@ function renderMasterItems(){
  tabs.querySelectorAll('button[data-item-tab]').forEach(b=>{b.classList.toggle('selected',b.dataset.itemTab===masterItemTab);b.setAttribute('aria-pressed',String(b.dataset.itemTab===masterItemTab))});
  root.replaceChildren();const inventory=state.master.inventory||{};
  if(masterItemTab==='training'&&state.master.trainingStarterGiftReceived){const gift=document.createElement('p');gift.className='note';gift.textContent='🎁 初回プレゼント：育成アイテム6種類を各1個配布済み（1回限り・テスト用）';root.appendChild(gift)}
- if(masterItemTab==='training'){
-  const info=document.createElement('p');info.className='note';
-  info.textContent=!m||m.phase!=='grow'?'現在、育成中のモンスターはいません。':
-   '対象：第'+m.id+'号 '+m.name+'／'+m.day+'日目 ／ '+(m.trainingItemUsedDay===m.day?'本日は使用済み':'本日は使用可能')+'（育成コマンドとは別枠）';
-  root.appendChild(info);
- }
  const catalog=itemCatalog[masterItemTab]||[];
  for(const item of catalog){
   const qty=Math.max(0,Math.floor(Number(inventory[item.id])||0));
+  if(qty===0)continue;
   const card=document.createElement('div');card.className='item-entry';
   const top=document.createElement('div');top.className='row';const name=document.createElement('strong');name.textContent=item.name;
   const badge=document.createElement('span');badge.className='badge';badge.textContent='所持 × '+qty;top.append(name,badge);
   const desc=document.createElement('div');desc.className='note';desc.textContent=item.effect;
   card.append(top,desc);
-  if(masterItemTab==='training'){
-   const usable=!!(m&&m.phase==='grow'&&m.trainingItemUsedDay!==m.day);
-   const b=document.createElement('button');b.type='button';b.textContent='このモンスターに使う';
-   b.disabled=qty<1||!usable;b.style.marginTop='7px';
-   b.onclick=()=>useTrainingItem(item.id);card.appendChild(b);
-  }
   root.appendChild(card);
+ }
+ if(!catalog.some(item=>Math.max(0,Math.floor(Number(inventory[item.id])||0))>0)){
+  const empty=document.createElement('p');empty.className='note';empty.textContent='所持しているアイテムはありません。';root.appendChild(empty);
  }
  const known=new Set(Object.values(itemCatalog).flat().map(item=>item.id));
  const unknown=Object.entries(inventory).filter(([id,count])=>!known.has(id)&&Number(count)>0);
