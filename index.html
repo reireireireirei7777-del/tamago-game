@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.4.3.22</title><style>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>たまご育成 Ver.4.3.23</title><style>
 *{box-sizing:border-box}body{margin:0;background:#dce6d4;color:#253d2e;font-family:-apple-system,BlinkMacSystemFont,sans-serif}main{max-width:450px;margin:auto;padding:7px 9px 35px}h1{font-size:19px;margin:2px 0}.sub,.note{font-size:11px;line-height:1.35}.sub{margin-bottom:4px}.card{background:#f5f8ec;border:2px solid #405b44;border-radius:11px;padding:8px;margin:6px 0;box-shadow:2px 2px 0 #afc2a7}.row{display:flex;justify-content:space-between;gap:6px;align-items:center}.badge{font-size:11px;background:#d9e8cf;border-radius:5px;padding:3px 5px}.lcd{height:95px;background:#b4c99f;border:3px solid #415a42;border-radius:7px;display:grid;place-items:center;margin-top:5px}canvas{width:85px;height:85px;image-rendering:pixelated}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.stat{background:#e3edd9;padding:5px 6px;border-radius:5px;font-size:12px;display:flex;justify-content:space-between;gap:3px}.buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}button{min-height:38px;border:2px solid #39513e;border-radius:7px;background:#dceccf;font-size:13px;font-weight:700;color:#263d2d}button:active{background:#b7d5a3}.risk{background:#f0d5c6}.primary{background:#a7d18e}.log{font-size:12px;line-height:1.6;max-height:170px;overflow:auto;white-space:pre-wrap}h2{font-size:14px;margin:0 0 5px}details{margin:5px 0;padding:5px;background:#e6efdd;border-radius:5px;font-size:13px}summary{font-weight:700;cursor:pointer}.full{width:100%;margin-top:8px}.comment{background:#e3edd9;border-left:4px solid #6d8e65;padding:7px 8px;font-size:12px;line-height:1.4;border-radius:4px;min-height:33px}.comment strong{font-weight:700}.comment{white-space:pre-wrap}.hint{margin:5px 0 0}.move-option{display:flex;gap:7px;align-items:center;padding:6px 4px;border-bottom:1px solid #cbd9c4;font-size:12px}.move-option input{width:19px;height:19px;flex:none}.move-option small{display:block;color:#536d58}.evolution-choice{display:flex;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #cbd9c4}.evolution-sprite{width:66px;height:66px;flex:none;background:#b4c99f;border:2px solid #405b44;border-radius:5px}.evolution-info{min-width:0;flex:1;font-size:12px}.evolution-info button{width:100%;margin-top:5px}.evolution-info .mini{line-height:1.6}.roster-item{border:1px solid #b2c7a9;border-radius:7px;padding:7px;margin:6px 0;font-size:12px}.roster-item .row{margin-bottom:4px}.tag{background:#d8e8cb;border-radius:4px;padding:2px 5px}.mini{font-size:11px}.compact-head{font-size:14px}.stats-card{padding:7px 8px}.comment-card{padding:7px 8px}
 @media(max-height:700px){main{padding-top:4px}.sub{display:none}.lcd{height:76px}canvas{width:69px;height:69px}.card{margin:4px 0;padding:6px}.stats-card,.comment-card{padding:5px 7px}button{min-height:34px}.buttons{gap:4px}h2{margin-bottom:3px}.stat{padding:4px 5px}.hint{display:none}}
 #battle-ui .battle-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:7px 0}#battle-ui .fighter{background:#e3edd9;border:1px solid #a5bea0;border-radius:6px;padding:6px;font-size:11px}#battle-ui .fighter b{font-size:13px}#battle-ui .bar{height:8px;background:#c9c9c1;border-radius:5px;overflow:hidden;margin:4px 0}#battle-ui .bar i{display:block;height:100%;background:#5a9565}#battle-ui .bar.mp i{background:#6589ab}#battle-ui .battle-log{white-space:pre-wrap;font-size:12px;max-height:210px;overflow:auto;background:#e3edd9;border-radius:5px;padding:7px;margin:7px 0}#battle-ui .battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}#battle-ui button{font-size:12px}#battle-ui .selected{background:#a7d18e}#battle-ui .fighter.ko{opacity:.45}
@@ -137,7 +137,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.22';
+const APP_VERSION='Ver.4.3.23';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -852,10 +852,12 @@ function makeArenaChallengers(stage,ours){
    moves:usable.slice(0,4).length?usable.slice(0,4):['focus']};
  });
 }
-function startBattle(mode='normal',continuing=false){if(questRun){alert('進行中のクエストがあります。クエスト画面から再開してください。');openQuestScreen();return}if(!continuing&&battle&&battle.phase!=='end'){alert('進行中の戦闘があります。先に再開してください。');openBattle();return}battleSequence++;pendingTarget=null;
+function startBattle(mode='normal',continuing=false,selectedTowerIds=null){if(questRun){alert('進行中のクエストがあります。クエスト画面から再開してください。');openQuestScreen();return}if(!continuing&&battle&&battle.phase!=='end'){alert('進行中の戦闘があります。先に再開してください。');openBattle();return}battleSequence++;pendingTarget=null;
 if(!continuing){battleMode=mode;arenaWins=0;arenaParty=null;}
-if(!continuing&&state.team.length!==2){alert('牧場で2匹をチームに加えてください。');return}if(!continuing&&sameSpeciesTeam()){alert('同種族の2匹では対戦できません。牧場で別の種族を選んでください。');return}
-let ours=state.team.map(id=>state.roster.find(x=>x.id===id));
+const chosenIds=mode==='arena'&&!continuing&&Array.isArray(selectedTowerIds)?selectedTowerIds:state.team;
+if(!continuing&&chosenIds.length!==2){alert('出撃する2匹を選んでください。');return}
+let ours=chosenIds.map(id=>state.roster.find(x=>String(x.id)===String(id)));
+if(!continuing&&ours.every(Boolean)&&(String(ours[0].id)===String(ours[1].id)||ours[0].name===ours[1].name)){alert('異なる種族の2匹を選んでください。');return}
 if(!continuing&&ours.some(x=>!x)){alert('チームを編成し直してください。');return}
 let pool=state.roster.filter(x=>!state.team.includes(x.id));
 if(battleMode==='arena')pool=[];
@@ -882,14 +884,46 @@ initRareBattle(party,enemyMons);
  for(const f of party){if(f.speciesName!=='ひよこキング')continue;const mate=party.find(x=>x!==f);if(mate&&!mate.chickBuff){mate.stats=mate.stats.map(v=>Math.round(v*1.1));mate.maxHp=mate.stats[0];mate.maxMp=mate.stats[1];mate.hp=Math.min(mate.maxHp,Math.round(mate.hp*1.1));mate.mp=Math.min(mate.maxMp,Math.round(mate.mp*1.1));mate.chickBuff=true;}}
 battle={resultKey:'b'+Date.now()+'-'+Math.floor(Math.random()*1e9)+'-'+nextStage,all:[...party,...enemyMons.map((x,i)=>mkF(x,'敵',i))],turn:1,queue:[],phase:'choose',logs:[battleMode==='arena'?'無限の塔 '+nextStage+'階'+(boss?'【ボス戦】':'')+'！':'CPUチームが現れた！','前衛：物理+10％／後衛：味方回復+20％。2匹の行動を選んでください。'],result:null};equipStartBattle(battle.all.filter(x=>x.side==='味方'),battle.all.filter(x=>x.side==='敵'));openBattle();renderBattle();storeBattle()} 
 // Ver.4.0.6: 闘技場の開始エラーを可視化し、壊れた一時戦闘だけを巻き戻す。牧場セーブは変更しない。
-function safeStartArena(continuing=false){
+function safeStartArena(continuing=false,selectedTowerIds=null){
  const previousBattle=battle,previousMode=battleMode,previousWins=arenaWins,previousParty=arenaParty;
- try{startBattle('arena',continuing)}catch(err){
+ try{startBattle('arena',continuing,selectedTowerIds)}catch(err){
   console.error('無限の塔開始エラー',err);
   battle=previousBattle;battleMode=previousMode;arenaWins=previousWins;arenaParty=previousParty;
   try{storeBattle();renderBattle()}catch(recoveryError){console.error('闘技場画面復旧エラー',recoveryError)}
   alert('無限の塔を開始できませんでした。\n原因：'+(err&&err.message?err.message:String(err))+'\n育成記録・牧場データは変更していません。');
  }
+}
+// Ver.4.3.23: 無限の塔もクエストと同じ前衛・後衛選択方式。牧場の通常チーム編成は変更しない。
+function chooseArenaParty(){
+ if(questRun){alert('進行中のクエストがあります。先にクエストを終了してください。');openQuestScreen();return}
+ if(battle&&battle.phase!=='end'){alert('進行中の対戦を終了してください。');openBattle();return}
+ let box=$('battle-ui');if(!box)return;box.replaceChildren();
+ const add=(tag,txt,parent=box,cls='')=>{const el=document.createElement(tag);el.textContent=txt;if(cls)el.className=cls;parent.appendChild(el);return el};
+ add('h3','🏯 無限の塔・出撃ペア選択');
+ add('p','牧場から前衛・後衛を選んでください。塔の挑戦中は変更できません。通常のチーム編成は変更しません。',box,'note');
+ const selects=[],previews=[];
+ for(let i=0;i<2;i++){
+  const row=add('div','',box,'quest-choice');add('label',i===0?'🛡️ 前衛':'🌿 後衛',row);
+  const sel=add('select','',row);const empty=document.createElement('option');empty.value='';empty.textContent='モンスターを選択';sel.appendChild(empty);
+  state.roster.forEach(mon=>{const opt=document.createElement('option');opt.value=String(mon.id);opt.textContent=(mon.nickname||mon.name)+' #'+mon.id;sel.appendChild(opt)});
+  const preferred=state.team[i];if(state.roster.some(mon=>String(mon.id)===String(preferred)))sel.value=String(preferred);
+  selects.push(sel);previews.push(add('div','',box,'quest-member-preview'));
+ }
+ const message=add('p','',box,'note');
+ const go=add('button','⚔️ このペアで無限の塔に挑戦',box,'full primary');
+ go.onclick=()=>{const mons=selects.map(sel=>state.roster.find(m=>String(m.id)===sel.value));if(mons.some(m=>!m)||String(mons[0].id)===String(mons[1].id)||mons[0].name===mons[1].name){alert('異なる種族の2匹を選択してください。');return}safeStartArena(false,mons.map(m=>m.id))};
+ const back=add('button','↩ 戻る',box,'full');back.onclick=()=>renderBattle();
+ function refresh(){
+  const mons=selects.map(sel=>state.roster.find(m=>String(m.id)===sel.value));
+  mons.forEach((mon,i)=>{const el=previews[i];el.replaceChildren();if(!mon){el.textContent='モンスターを選ぶと能力・技を表示します。';return}
+   add('b',(mon.nickname||mon.name)+'（第'+mon.id+'号）',el,'qmp-name');
+   const grid=add('div','',el,'qmp-stats');keys.forEach((key,j)=>{const cell=add('div','',grid,'qmp-stat');add('span',key,cell);add('b',Number(mon.stats?.[j]||0).toLocaleString('ja-JP'),cell)});
+   add('div','技：'+((mon.moves||[]).map(id=>moveById(id)).filter(Boolean).map(m=>m.name).join(' ／ ')||'未設定'),el,'qmp-detail');
+  });
+  const valid=mons.every(Boolean)&&String(mons[0].id)!==String(mons[1].id)&&mons[0].name!==mons[1].name;
+  go.disabled=!valid;message.textContent=valid?'✅ このペアで出撃できます':mons.every(Boolean)?'⚠️ 異なる種族の2匹を選んでください。':'前衛・後衛を選択してください。';
+ }
+ selects.forEach(sel=>sel.onchange=refresh);refresh();
 }
 function saveArenaRecord(){if(battleMode!=='arena')return;let best=Number(state.arenaBest)||0;if(arenaWins>best){state.arenaBest=arenaWins;state.arenaBestTeam=battle.all.filter(f=>f.side==='味方').map(f=>({name:f.name,stats:[...f.stats],moves:[...f.moves]}));save()}updateArenaRecord()}
 function updateArenaRecord(){let el=$('arena-record');if(el)el.textContent='🏆 無限の塔・最高突破記録：'+(state.arenaBest||0)+'階'}
@@ -1445,7 +1479,7 @@ if(!battle||battle.phase!=='choose'||!battle.spectator||!battle.autoSpectate)sto
 let box=$('battle-ui');if(!box)return;box.replaceChildren();
 const add=(tag,text,parent=box,cls='')=>{let el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;parent.appendChild(el);return el};
 const btn=(label,fn,parent=box)=>{let b=add('button',label,parent);b.onclick=fn;return b};
-if(!battle){renderFriendMenu(box,add,btn);renderTrainingMenu(box,add,btn);let a=btn('🏟️ 無限の塔に挑戦',()=>safeStartArena());a.className='full primary';a.disabled=state.team.length!==2||sameSpeciesTeam();if(a.disabled){add('p',state.team.length!==2?'⚠️ 無限の塔には牧場で2匹をチーム編成してください。':'⚠️ 無限の塔には異なる種族の2匹を編成してください。',box,'note');}add('p','無限の塔：毎ターンMPが1〜7回復。HP・MPは階層間で引き継ぎ。10階ごとにボス登場。撤退・敗北時に突破階数×1％でアイテム抽選（レア度は★3クエストと同じ）。最高突破 '+(state.arenaBest||0)+'階',box,'note');return}
+if(!battle){renderFriendMenu(box,add,btn);renderTrainingMenu(box,add,btn);let a=btn('🏟️ 無限の塔に挑戦（ペアを選択）',chooseArenaParty);a.className='full primary';a.disabled=state.roster.length<2;if(a.disabled)add('p','⚠️ 牧場に2匹以上のモンスターが必要です。',box,'note');add('p','無限の塔：毎ターンMPが1〜7回復。HP・MPは階層間で引き継ぎ。10階ごとにボス登場。撤退・敗北時に突破階数×1％でアイテム抽選（レア度は★3クエストと同じ）。最高突破 '+(state.arenaBest||0)+'階',box,'note');return}
 add('div',(battleMode==='arena'?'🏯 無限の塔 '+(arenaWins+1)+'階 / 最高突破 '+arenaWins+'階　':battleMode==='friend'?'🤝 友達対戦　':battleMode==='training'?'🏋️ 訓練　':'')+(battle.result||'第'+battle.turn+'ターン'),box,'badge');
 for(const side of ['敵','味方']){
 add('div',side+'チーム',box,'mini');
@@ -1493,7 +1527,7 @@ if(battleMode==='arena'&&battle.phase==='end'&&battle.result!=='勝利！'){
 if((battleMode==='friend'||battleMode==='training')&&battle.phase==='end')add('p',(battleMode==='training'?'🏋️ 訓練の結果：':'🤝 友達対戦の結果：')+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
 let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
-if(battleMode==='story'&&battle.phase==='end'){btn(battle.result==='勝利！'?'▶ 物語を続ける':'↩ 第'+(storyRun?.stage+1||1)+'戦に再挑戦',storyBattleAdvance).className='full primary'}else if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',()=>startBattle(battleMode)).className='full primary';
+if(battleMode==='story'&&battle.phase==='end'){btn(battle.result==='勝利！'?'▶ 物語を続ける':'↩ 第'+(storyRun?.stage+1||1)+'戦に再挑戦',storyBattleAdvance).className='full primary'}else if(battleMode==='quest'&&battle.phase==='end'){btn(battle.result==='勝利！'?(questRun&&questRun.stage===2?'🏆 クエストを完了する':'▶ 次の戦闘へ'):'↩ クエスト一覧へ',questAdvance).className='full primary'}else if(battle.phase==='end'&&battleMode==='arena'&&battle.result==='勝利！'){btn('▶ 次の階へ（HP・MP引き継ぎ）',continueArena).className='full primary';btn('🏁 ここで終了・記録を残す',retireArena).className='full'}else if(battle.phase==='end'&&(battleMode==='friend'||battleMode==='training'))btn('✅ 結果を確認して対戦メニューへ戻る',()=>{stopSpectatorTimer();battleSequence++;battle=null;storeBattle();closeBattle();renderBattle()}).className='full primary';else if(battle.phase==='end')btn('🔄 新しく挑戦する',battleMode==='arena'?chooseArenaParty:()=>startBattle(battleMode)).className='full primary';
 if(battleMode==='arena'&&battle.phase==='choose')btn('🏁 撤退して記録を残す',retireArena).className='full';
 if(battleMode==='story'){
  btn('📜 ストーリーに戻る',()=>{storeBattle();closeBattle();openStoryScreen()}).className='full';
@@ -1684,7 +1718,7 @@ const itemCatalog={
  ],
  battle:[{id:'herb',name:'薬草',effect:'味方1体のHPを40回復'},{id:'greater_herb',name:'上薬草',effect:'味方1体のHPを100回復'},{id:'magic_water',name:'魔力の水',effect:'味方1体のMPを30回復'},{id:'panacea',name:'万能薬',effect:'味方1体の状態異常を回復'},{id:'star_medicine',name:'星の薬',effect:'味方1体のHP・MPを全回復'}]
 };
-// Ver.4.3.22: 3連戦クリア時のドロップ率は従来どおり。ドロップ後にレア度を抽選する。
+// Ver.4.3.23: 3連戦クリア時のドロップ率は従来どおり。ドロップ後にレア度を抽選する。
 // 行=クエスト難易度★1〜★5、列=アイテムレア度★1〜★5（合計100）。
 const questItemDropRates=[0.10,0.25,0.50,1,1];
 const questItemRarityWeights=[
