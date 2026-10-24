@@ -131,7 +131,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div id="master-screen" hidden><div class="master-shell"><div class="row"><h2>👑 マスター</h2><button id="master-back" type="button">育成に戻る</button></div>
 <section class="card"><h2>プロフィール</h2><div class="row"><strong id="master-name-display"></strong><button id="master-rename" type="button">✏️ 名前を変更</button></div><div id="master-records" class="master-records"></div><p class="note">過去の戦闘回数など、旧バージョンで保存されていない記録は復元できません。</p></section>
 <section class="card"><h2>🏆 クエスト実績・称号</h2><div id="quest-master-stats"></div></section>
-<section class="card"><h2>🎒 アイテム管理</h2><p class="note">育成アイテムは育成画面から使用できます。ここでは所持品を確認できます。装備・戦闘アイテムの使用と報酬獲得は今後追加します。</p><div class="item-tabs" id="master-item-tabs"><button type="button" data-item-tab="training" class="selected">🥣 育成</button><button type="button" data-item-tab="equipment">⚔️ 装備</button><button type="button" data-item-tab="battle">🌿 戦闘</button></div><div id="master-items"></div></section></div></div>
+<section class="card"><h2>🎒 アイテム管理</h2><p class="note">育成アイテムは育成画面から使用できます。ここでは所持品を確認できます。装備品は牧場で付け替えできます。アイテムの報酬獲得は今後追加します。</p><div class="item-tabs" id="master-item-tabs"><button type="button" data-item-tab="training" class="selected">🥣 育成</button><button type="button" data-item-tab="equipment">⚔️ 装備</button><button type="button" data-item-tab="battle">🌿 戦闘</button></div><div id="master-items"></div></section></div></div>
 <div id="dex-screen" hidden><div class="dex-shell"><div class="row"><h2>📖 モンスター図鑑</h2><button id="dex-back" type="button">育成に戻る</button></div><section class="card"><div id="dex-count" class="dex-progress"></div><div class="dex-meter"><i id="dex-meter-bar"></i></div><p class="note">一度でも牧場に登録した種族を記録します。放牧しても発見記録は消えません。</p><div id="dex-grid" class="dex-grid"></div><div id="dex-detail" class="dex-detail" hidden></div></section></div></div>
 <div id="farm-screen" hidden><div class="farm-shell"><div class="row"><h2>🐾 牧場・チーム編成</h2><button id="farm-back" type="button">育成に戻る</button></div><section class="card"><div id="team-info" class="note"></div><div class="farm-tools"><input id="farm-search" type="search" placeholder="名前・ニックネーム・種類・特技・番号で検索" autocomplete="off" aria-label="牧場を検索"><select id="farm-sort" aria-label="並べ替え"><option value="new">新しい順</option><option value="old">古い順</option><option value="sum">総合能力が高い順</option><option value="hp">HPが高い順</option><option value="mp">MPが高い順</option><option value="atk">力が高い順</option><option value="int">賢さが高い順</option><option value="spd">素早さが高い順</option><option value="def">防御が高い順</option></select></div><div id="farm-count" class="note"></div><div id="roster"></div></section></div></div><div id="battle-screen" hidden><div class="battle-shell">
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
@@ -493,9 +493,11 @@ function showBreedingResult(mon,saved){
 }
 function finalizeMonster(entry,oldId){
  const oldRoster=state.roster,oldTeam=state.team,oldCurrent=m,oldRecords=state.records;
- const oldDiscovered=state.discoveredSpecies;
+ const oldDiscovered=state.discoveredSpecies;const oldEquipmentId=oldId==null?null:state.roster.find(v=>v.id===oldId)?.equipmentId;const oldInventory={...state.master.inventory};
  const old=oldId==null?null:oldRoster.find(v=>v.id===oldId);
  if(oldId!=null&&!old){alert('既存個体が見つかりません。入れ替えを中止しました。');return}
+ // 入れ替えで外れる個体の装備は倉庫へ返却する。
+ if(old)returnEquipment(old);
  // 保存失敗時は元に戻す。記録は育成時点の歴代ランキングなので維持。
  const nextRoster=oldRoster.filter(v=>v.id!==oldId&&v.id!==entry.id).concat([entry]);
  const nextTeam=oldTeam.map(id=>id===oldId?entry.id:id).filter(id=>nextRoster.some(v=>v.id===id));
@@ -505,7 +507,7 @@ function finalizeMonster(entry,oldId){
  state.discoveredSpecies=[...new Set([...oldDiscovered,entry.name])];
  m={...m,moves:[...entry.moves],availableMoves:[...entry.availableMoves],phase:'done',logs:[old?'牧場の個体を入れ替えて保存した！':'特技を選び、牧場に保存した！',...m.logs]};
  state.current=m;
- try{localStorage.setItem(key,JSON.stringify(state))}catch(e){state.roster=oldRoster;state.team=oldTeam;state.records=oldRecords;state.discoveredSpecies=oldDiscovered;m=oldCurrent;state.current=m;alert('保存に失敗しました。既存の個体はそのままです。');return}
+ try{localStorage.setItem(key,JSON.stringify(state))}catch(e){state.roster=oldRoster;state.team=oldTeam;state.records=oldRecords;state.discoveredSpecies=oldDiscovered;state.master.inventory=oldInventory;if(old&&oldInventory&&oldEquipmentId)old.equipmentId=oldEquipmentId;m=oldCurrent;state.current=m;alert('保存に失敗しました。既存の個体はそのままです。');return}
  pendingReplacement=null;renderDex();delete m.preEvolutionSnapshot;const screen=$('replace-screen');if(screen)screen.hidden=true;
  render();showBreedingResult(entry,true);
 }
@@ -588,13 +590,14 @@ function releaseFromFarm(id){
  const message=label+'を牧場から放牧しますか？\n'+detail+'\n戦闘 '+(Number(mon.battles)||0)+'戦 ／ 勝利 '+(Number(mon.wins)||0)+'勝'+(inTeam?'\n※現在チームに編成されています。放牧するとチームからも外れます。':'')+'\n\n放牧した個体は元に戻せません。\n※育成・ランキングの過去記録は残ります。';
  if(!confirm(message))return;
  // 保存に失敗した場合、画面上の牧場データも元に戻す。
- const oldRoster=state.roster,oldTeam=state.team,oldAbandoned=state.abandoned;
+ const oldEquipmentId=mon.equipmentId;const oldRoster=state.roster,oldTeam=state.team,oldAbandoned=state.abandoned,oldInventory={...state.master.inventory};
+ returnEquipment(mon);
  state.roster=oldRoster.filter(v=>v.id!==id);
  state.team=oldTeam.filter(v=>v!==id);
  state.abandoned=(Number(oldAbandoned)||0)+1;
  state.current=m;
  try{localStorage.setItem(key,JSON.stringify(state))}
- catch(e){state.roster=oldRoster;state.team=oldTeam;state.abandoned=oldAbandoned;alert('保存に失敗したため、放牧は取り消しました。');return}
+ catch(e){state.roster=oldRoster;state.team=oldTeam;state.abandoned=oldAbandoned;state.master.inventory=oldInventory;if(mon.equipmentId===undefined&&oldEquipmentId)mon.equipmentId=oldEquipmentId;alert('保存に失敗したため、放牧は取り消しました。');return}
  render();
  alert(label+'を放牧しました。');
 }
@@ -609,10 +612,16 @@ filtered.sort((a,b)=>sort==='old'?a.id-b.id:sort==='new'?b.id-a.id:sort==='sum'?
 $('farm-count').textContent='検索結果 '+filtered.length+'匹 ／ 全'+state.roster.length+'匹';
 if(!filtered.length&&state.roster.length)$('roster').innerHTML='<p class="note">該当するモンスターはいません。</p>';
 filtered.forEach(mon=>{let box=document.createElement('div');box.className='roster-item';let names=(mon.moves||[]).map(id=>moveBook.find(v=>v.id===id)?.name||id).join('・');const special=fourthMove(mon);if(special&&!((mon.moves||[]).includes(special.id)))names+=(names?'・':'')+special.name+'【固有技・4枠目】';else if(special)names=names.replace(special.name,special.name+'【固有技】');let inTeam=state.team.includes(mon.id);
-box.innerHTML='<div class="row"><strong class="monster-title"></strong><span class="tag">'+(inTeam?(state.team.indexOf(mon.id)===0?'🛡️ 前衛':'🌿 後衛'):'牧場')+'</span></div><div class="mini">'+keys.map((k,i)=>k+':'+mon.stats[i]).join(' ／ ')+'</div><div class="mini">合計 '+mon.sum+' ／ 特技：'+(names||'旧版個体・技未設定')+'</div><div class="mini">⚔️ 戦闘 '+(Number(mon.battles)||0)+'戦 ／ 🏆 勝利 '+(Number(mon.wins)||0)+'勝'+(growthRate(mon)?' ／ 歴戦成長 ＋'+Math.round(growthRate(mon)*100)+'％':'')+'</div>';
+box.innerHTML='<div class="row"><strong class="monster-title"></strong><span class="tag">'+(inTeam?(state.team.indexOf(mon.id)===0?'🛡️ 前衛':'🌿 後衛'):'牧場')+'</span></div><div class="mini">'+keys.map((k,i)=>k+':'+equippedStats(mon)[i]+(equippedStats(mon)[i]!==mon.stats[i]?' ('+mon.stats[i]+'＋'+(equippedStats(mon)[i]-mon.stats[i])+')':'')).join(' ／ ')+'</div><div class="mini">合計 '+mon.sum+' ／ 特技：'+(names||'旧版個体・技未設定')+'</div><div class="mini">⚔️ 戦闘 '+(Number(mon.battles)||0)+'戦 ／ 🏆 勝利 '+(Number(mon.wins)||0)+'勝'+(growthRate(mon)?' ／ 歴戦成長 ＋'+Math.round(growthRate(mon)*100)+'％':'')+'</div>';
 if(inTeam)box.querySelector('.tag').classList.add(state.team.indexOf(mon.id)===0?'front-tag':'back-tag');
 box.querySelector('.monster-title').textContent='第'+mon.id+'号　'+(mon.nickname||mon.name)+(mon.nickname?'（'+mon.name+'）':'');
 let rename=document.createElement('button');rename.textContent=mon.nickname?'✏️ ニックネーム変更':'✏️ ニックネームをつける';rename.style.width='100%';rename.style.marginTop='5px';rename.onclick=()=>{let value=prompt('第'+mon.id+'号 '+mon.name+' のニックネーム（12文字まで）\n空欄で保存するとニックネームを解除します。',mon.nickname||'');if(value===null)return;value=value.trim();if([...value].length>12){alert('ニックネームは12文字以内にしてください。');return}mon.nickname=value;save();render()};box.appendChild(rename);
+const equipRow=document.createElement('div');equipRow.className='item-entry';equipRow.style.marginTop='7px';
+const currentEquip=equipmentDef(mon.equipmentId);const equipTitle=document.createElement('div');equipTitle.className='mini';equipTitle.textContent='⚔️ 装備：'+(currentEquip?currentEquip.name+' ★1（'+currentEquip.effect+'）':'なし');equipRow.appendChild(equipTitle);
+const equipSelect=document.createElement('select');equipSelect.style.width='100%';equipSelect.setAttribute('aria-label','装備品を選択');
+const emptyOption=document.createElement('option');emptyOption.value='';emptyOption.textContent='装備なし（取り外す）';equipSelect.appendChild(emptyOption);
+for(const item of itemCatalog.equipment){const qty=Math.max(0,Math.floor(Number(state.master.inventory[item.id])||0));if(qty===0&&mon.equipmentId!==item.id)continue;const opt=document.createElement('option');opt.value=item.id;opt.textContent=item.name+' ★'+item.rarity+' ／ '+item.effect+(qty?' ／ 在庫'+qty:' ／ 装備中');equipSelect.appendChild(opt)}
+equipSelect.value=mon.equipmentId||'';equipSelect.onchange=()=>changeEquipment(mon.id,equipSelect.value);equipRow.appendChild(equipSelect);box.appendChild(equipRow);
 let b=document.createElement('button');b.style.marginTop='5px';b.style.width='100%';b.textContent=inTeam?'チームから外す':'チームに加える';b.onclick=()=>{if(inTeam)state.team=state.team.filter(id=>id!==mon.id);else if(state.team.length>=2){
  const members=state.team.map(id=>state.roster.find(x=>x.id===id));
  const valid=members.map((old,i)=>({old,i})).filter(v=>members.every((other,j)=>j===v.i||other.name!==mon.name));
@@ -746,7 +755,7 @@ function restoreBattle(){
 }
 
 const moveById=id=>moveBook.find(v=>v.id===id);
-function mkF(mon,side,i){let st=migrateStats([...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
+function mkF(mon,side,i){let st=migrateStats(side==='味方'&&Number(mon.id)>0?equippedStats(mon):[...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
 
 function initRareBattle(party,enemyMons){
  let candidates=[...branches.flat().map(x=>x[0]),...extraEvo.map(x=>x.name),...Object.keys(rareSpecs).filter(x=>x!=='カオスエッグ')];
@@ -1609,10 +1618,28 @@ function renderQuestMaster(){const el=$('quest-master-stats');if(!el||!questData
 
 // Ver.4.3.11 アイテム台帳。効果の発動や報酬付与は次の段階で実装する。
 const itemCatalog={
- training:[{id:'consomme_soup',name:'コンソメスープ',effect:'HP＋10（育成中）'},{id:'magic_soup',name:'魔法のスープ',effect:'MP＋10（育成中）'},{id:'power_apple',name:'力のリンゴ',effect:'力＋5（育成中）'},{id:'guard_mushroom',name:'守りのキノコ',effect:'守備＋5（育成中）'},{id:'speed_fruit',name:'素早さの実',effect:'素早さ＋5（育成中）'},{id:'star_drop',name:'星のしずく',effect:'全能力＋3（育成中）'}],
- equipment:[{id:'wood_sword',name:'木の剣',effect:'力＋5（装備中）'},{id:'iron_sword',name:'鉄の剣',effect:'力＋15（装備中）'},{id:'jewel_sword',name:'宝石の剣',effect:'力＋30（装備中）'},{id:'iron_shield',name:'鉄の盾',effect:'守備＋20（装備中）'},{id:'wind_shoes',name:'疾風の靴',effect:'素早さ＋20（装備中）'},{id:'star_ring',name:'星の指輪',effect:'MP＋30（装備中）'}],
+ training:[{id:'consomme_soup',name:'コンソメスープ',rarity:1,effect:'HP＋10（育成中）'},{id:'magic_soup',name:'魔法のスープ',rarity:1,effect:'MP＋10（育成中）'},{id:'power_apple',name:'力のリンゴ',rarity:1,effect:'力＋5（育成中）'},{id:'guard_mushroom',name:'守りのキノコ',rarity:1,effect:'守備＋5（育成中）'},{id:'speed_fruit',name:'素早さの実',rarity:1,effect:'素早さ＋5（育成中）'},{id:'star_drop',name:'星のしずく',rarity:1,effect:'全能力＋3（育成中）'}],
+ equipment:[{id:'wood_sword',name:'木の剣',effect:'力＋5（装備中）',rarity:1,bonus:[0,0,5,0,0,0]},{id:'wood_shield',name:'木の盾',effect:'防御＋5（装備中）',rarity:1,bonus:[0,0,0,0,0,5]},{id:'cloth_hat',name:'布の帽子',effect:'賢さ＋5（装備中）',rarity:1,bonus:[0,0,0,5,0,0]},{id:'leather_shoes',name:'革の靴',effect:'素早さ＋5（装備中）',rarity:1,bonus:[0,0,0,0,5,0]},{id:'wood_staff',name:'木の杖',effect:'MP＋10（装備中）',rarity:1,bonus:[0,10,0,0,0,0]},{id:'wood_necklace',name:'木の首飾り',effect:'HP＋10（装備中）',rarity:1,bonus:[10,0,0,0,0,0]}],
  battle:[{id:'herb',name:'薬草',effect:'味方1体のHPを40回復'},{id:'greater_herb',name:'上薬草',effect:'味方1体のHPを100回復'},{id:'magic_water',name:'魔力の水',effect:'味方1体のMPを30回復'},{id:'panacea',name:'万能薬',effect:'味方1体の状態異常を回復'},{id:'star_medicine',name:'星の薬',effect:'味方1体のHP・MPを全回復'}]
 };
+// Ver.4.3.17: 牧場で装備変更。装備品の所有数は未装備在庫＋装備中の合計。
+function equipmentDef(id){return itemCatalog.equipment.find(x=>x.id===id)}
+function equippedStats(mon){const base=migrateStats([...(mon.stats||[])]);const item=equipmentDef(mon.equipmentId);return item?base.map((n,i)=>n+item.bonus[i]):base}
+function returnEquipment(mon){if(!mon||!mon.equipmentId)return;const id=mon.equipmentId;if(equipmentDef(id)){const inv=state.master.inventory;inv[id]=(Math.max(0,Math.floor(Number(inv[id])||0)))+1}delete mon.equipmentId}
+function changeEquipment(monId,newId){
+ const mon=state.roster.find(x=>String(x.id)===String(monId));if(!mon)return;
+ if(newId&&!equipmentDef(newId)){alert('この装備品は選択できません。');return}
+ const inv=state.master.inventory,oldId=mon.equipmentId||'';
+ if(newId===oldId)return;
+ if(newId&&!(Number(inv[newId])>0)){alert('この装備品の在庫がありません。');renderRoster();return}
+ const snapshot={...inv};
+ if(oldId&&equipmentDef(oldId))inv[oldId]=(Number(inv[oldId])||0)+1;
+ if(newId)inv[newId]=Math.floor(Number(inv[newId]))-1;
+ if(newId)mon.equipmentId=newId;else delete mon.equipmentId;
+ try{localStorage.setItem(key,JSON.stringify({...state,current:m}))}
+ catch(e){state.master.inventory=snapshot;if(oldId)mon.equipmentId=oldId;else delete mon.equipmentId;alert('保存に失敗したため、装備変更を取り消しました。');return}
+ render();
+}
 // Ver.4.3.14: 育成アイテム（ゲーム内の育成日ごとに1回、通常の育成行動と独立）
 const trainingItemBonuses={
  consomme_soup:[10,0,0,0,0,0],magic_soup:[0,10,0,0,0,0],
@@ -1669,15 +1696,16 @@ function renderMasterItems(){
  const catalog=itemCatalog[masterItemTab]||[];
  for(const item of catalog){
   const qty=Math.max(0,Math.floor(Number(inventory[item.id])||0));
-  if(qty===0)continue;
+  const holders=masterItemTab==='equipment'?state.roster.filter(mon=>mon.equipmentId===item.id):[];
+  if(qty===0&&!holders.length)continue;
   const card=document.createElement('div');card.className='item-entry';
-  const top=document.createElement('div');top.className='row';const name=document.createElement('strong');name.textContent=item.name;
-  const badge=document.createElement('span');badge.className='badge';badge.textContent='所持 × '+qty;top.append(name,badge);
+  const top=document.createElement('div');top.className='row';const name=document.createElement('strong');name.textContent=item.name+' ★'+(item.rarity||1);name.style.color=(item.rarity||1)===1?'#777':'inherit';
+  const badge=document.createElement('span');badge.className='badge';badge.textContent='在庫 × '+qty;top.append(name,badge);
   const desc=document.createElement('div');desc.className='note';desc.textContent=item.effect;
-  card.append(top,desc);
+  card.append(top,desc);if(holders.length){const h=document.createElement('div');h.className='note';h.textContent='装備中：'+holders.map(mon=>'第'+mon.id+'号 '+(mon.nickname||mon.name)).join('、');card.appendChild(h)}
   root.appendChild(card);
  }
- if(!catalog.some(item=>Math.max(0,Math.floor(Number(inventory[item.id])||0))>0)){
+ if(!catalog.some(item=>Math.max(0,Math.floor(Number(inventory[item.id])||0))>0||(masterItemTab==='equipment'&&state.roster.some(mon=>mon.equipmentId===item.id)))){
   const empty=document.createElement('p');empty.className='note';empty.textContent='所持しているアイテムはありません。';root.appendChild(empty);
  }
  const known=new Set(Object.values(itemCatalog).flat().map(item=>item.id));
