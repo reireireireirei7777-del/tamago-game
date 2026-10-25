@@ -116,6 +116,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <section class="card" id="evolution-card" hidden><h2>✨ 進化先を選ぶ</h2><p class="note">進化後の能力値を比較して選べます。★は条件達成で解放された特別進化です。</p><div id="evolution-options"></div></section><section class="card" id="moves-card" hidden><h2>特技を3つ選ぶ</h2><p class="note">選ばなかった習得可能技も記録されます。将来、業師で入れ替えられます。</p><div id="move-options"></div><button id="save-monster" class="full primary">この3つで完成・保存</button><button id="back-to-evolution" class="full" style="margin-top:10px">↩ 種族選択に戻る</button></section>
 <section class="card" id="training-item-card" hidden><h2>🎒 アイテム</h2><div id="training-item-info" class="note"></div><div id="training-item-list"></div></section>
 <section class="card"><h2>🐾 牧場・チーム編成</h2><div id="team-summary" class="note"></div><button id="open-farm" class="full primary">🐾 牧場を開く・チーム編成</button></section>
+<section class="card"><h2>🏪 技屋さん</h2><div id="shop-gold" class="note"></div><p class="note">育成が完了したモンスターの技を、お金で入れ替えられます。</p><button id="open-move-shop" class="full primary">🏪 技屋さんへ行く</button></section>
 <section class="card"><h2>📖 モンスター図鑑</h2><div id="dex-summary" class="note"></div><button id="open-dex" class="full primary">📖 図鑑を開く</button></section>
 <section class="card"><h2>🗺️ 日替わりクエスト</h2><p class="note">毎朝4時更新・1日5件。3連戦でHP・MPを引き継ぎます。</p><button id="open-quests" class="full primary">⚔️ クエストを開く</button><div id="quest-summary" class="note"></div></section>
 <section class="card"><h2>📜 ストーリーモード</h2><p class="note">第1話「招かれざる招待状」公開中。アイザックと共闘する2連戦です。</p><button id="open-story" class="full primary">📜 話数を選ぶ</button><div id="story-summary" class="note"></div></section>
@@ -127,6 +128,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div id="breeding-result-screen" hidden role="dialog" aria-modal="true" aria-labelledby="breeding-result-title"><div class="card"><h2 id="breeding-result-title"></h2><div id="breeding-result-detail"></div><button id="breeding-result-close" type="button" class="primary full">閉じる</button></div></div>
 <div id="register-confirm-screen" hidden role="dialog" aria-modal="true" aria-labelledby="register-confirm-title"><div class="card"><h2 id="register-confirm-title">🥚 牧場への登録確認</h2><div id="register-confirm-detail"></div><button id="register-confirm-yes" class="primary" type="button">🌱 このモンスターを牧場に登録する</button><button id="register-confirm-edit" type="button">↩ 特技を選び直す</button></div></div>
 <div id="quest-screen" hidden><div class="quest-shell"><div class="row"><h2>🗺️ 日替わりクエスト</h2><button id="quest-back" type="button">育成に戻る</button></div><p class="note">毎朝4時（日本時間）に5件更新。クリア済みは当日再挑戦できません。開始済みの3連戦は日付をまたいでも続行できます。</p><div id="quest-list"></div><button id="quest-abort" type="button" class="risk full" hidden>🛑 進行中のクエストを中断する</button><p class="note">中断しても牧場・育成履歴・図鑑・クエストクリア実績は消えません。</p><div id="quest-party" class="card" hidden></div></div></div>
+<div id="move-shop-screen" hidden style="position:fixed;inset:0;z-index:125;background:#e9efe6;overflow:auto;padding:16px 12px 45px"><div style="max-width:470px;margin:auto"><div class="row"><h2>🏪 技屋さん</h2><button id="move-shop-back" type="button">育成に戻る</button></div><div class="card"><p id="move-shop-wallet" class="note"></p><label>モンスターを選ぶ<select id="move-shop-mon" style="display:block;width:100%;padding:10px;margin:8px 0"></select></label><div id="move-shop-detail"></div></div></div></div>
 <div id="story-screen" hidden><div class="quest-shell"><div class="row"><h2>📜 ストーリーモード</h2><button id="story-back" type="button">育成に戻る</button></div><div id="story-content" class="card"></div></div></div>
 <div id="master-screen" hidden><div class="master-shell"><div class="row"><h2>👑 マスター</h2><button id="master-back" type="button">育成に戻る</button></div>
 <section class="card"><h2>プロフィール</h2><div class="row"><strong id="master-name-display"></strong><button id="master-rename" type="button">✏️ 名前を変更</button></div><div id="master-records" class="master-records"></div><p class="note">過去の戦闘回数など、旧バージョンで保存されていない記録は復元できません。</p></section>
@@ -137,7 +139,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.24';
+const APP_VERSION='Ver.4.3.25';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -277,6 +279,7 @@ if(state.master.trainingStarterGiftReceived!==true){
  catch(e){state.master.inventory=previous;delete state.master.trainingStarterGiftReceived;console.warn('初回プレゼントの保存に失敗しました',e)}
 }
 if(!state.master.stats||typeof state.master.stats!=='object'||Array.isArray(state.master.stats))state.master.stats={};
+if(!Number.isFinite(Number(state.master.gold))||Number(state.master.gold)<0)state.master.gold=0;else state.master.gold=Math.floor(Number(state.master.gold));
 
 // 旧版の5能力データを安全に6能力へ移行（過去の防御は未記録のため0）
 function migrateStats(a){if(!Array.isArray(a))return [0,0,0,0,0,0];if(a.length===5)a.push(0);return a}
@@ -284,6 +287,14 @@ if(state.current)migrateStats(state.current.stats);
 Object.values(state.records||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>{migrateStats(e.stats);e.sum=e.stats.reduce((a,b)=>a+b,0)})});
 let m=state.current;if(m&&m.phase==='done'&&!state.roster.some(v=>v.id===m.id)){m.phase='moves';m.logs.unshift('旧版の完成個体です。特技を選んで牧場へ保存できます。')}const random=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 function save(){state.current=m;try{localStorage.setItem(key,JSON.stringify(state))}catch(e){alert('保存に失敗しました。')}}
+function goldText(){return (Number(state.master.gold)||0).toLocaleString('ja-JP')+'G'}
+function settleBattleGold(){
+ if(!battle||battle.goldSettled||!['quest','arena'].includes(battleMode))return;
+ const killed=battle.all.filter(f=>f.side==='敵'&&f.hp<=0).length;
+ const unit=battleMode==='quest'?Math.max(1,Math.min(5,Number(questRun?.difficulty)||1))*10:Math.max(1,Number(arenaWins)+(battle.result==='勝利！'?0:1))*5;
+ const earned=killed*unit; battle.goldSettled=true;battle.goldEarned=earned;
+ if(earned){state.master.gold=(Number(state.master.gold)||0)+earned;save();bLog('💰 敵'+killed+'体を倒し、'+earned+'G拾った！')}
+}
 // 既存の進化条件と同じ「個体番号」で判定する（100の倍数／11・22・111などのゾロ目）。
 function hasMilestoneEvolution(id){
  return id%100===0||(id>=11&&/^([1-9])\1+$/.test(String(id)));
@@ -1257,7 +1268,7 @@ function recordMatchResult(){
  save();
 }
 function checkResult(){
-if(alive('敵').length===0||alive('味方').length===0){battle.phase='end';battle.result=alive('敵').length===0?'勝利！':'敗北…';recordMatchResult();if(battleMode==='arena'&&battle.result==='勝利！'){arenaWins++;saveArenaRecord()}if(battleMode==='arena'&&battle.result!=='勝利！'){saveArenaRecord();const towerReward=arenaFinalReward();bLog('🏯 '+arenaWins+'階突破・最終報酬：'+towerReward.replace(/\n/g,' ／ '));storeBattle();renderMaster()}bLog('対戦終了！ '+battle.result+'（牧場のモンスターは無事です）');return true}return false}
+if(alive('敵').length===0||alive('味方').length===0){battle.phase='end';battle.result=alive('敵').length===0?'勝利！':'敗北…';recordMatchResult();settleBattleGold();if(battleMode==='arena'&&battle.result==='勝利！'){arenaWins++;saveArenaRecord()}if(battleMode==='arena'&&battle.result!=='勝利！'){saveArenaRecord();const towerReward=arenaFinalReward();bLog('🏯 '+arenaWins+'階突破・最終報酬：'+towerReward.replace(/\n/g,' ／ '));storeBattle();renderMaster()}bLog('対戦終了！ '+battle.result+'（牧場のモンスターは無事です）');return true}return false}
 const battleWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function copyFighter(f){return {phoenixUsed:f.phoenixUsed,crownUsed:f.crownUsed,wingsUsed:f.wingsUsed,hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null}}
 function restoreFighter(f,s){Object.assign(f,s)}
@@ -1371,7 +1382,7 @@ async function runTurn(replaySeed=null){
   const victims=alive(f.side);const opponents=alive(f.side==='味方'?'敵':'味方');const blast=300+f.maxHp*2;
   bLog(f.name+'が自爆した！ 防御無視の大爆発！');
   for(const t of victims){const dmg=Math.min(t.hp,blast);t.hp-=dmg;bLog(t.name+'に'+dmg+'ダメージ！');battleEffect('damage',t,dmg);if(!t.hp)battleEffect('ko',t)}
-  if(!alive(f.side).length){battle.phase='end';battle.result=f.side==='味方'?'敗北…':'勝利！';recordMatchResult();bLog('味方への爆発が先に命中！ '+battle.result);actionEffects=null;renderBattle();storeBattle();return}
+  if(!alive(f.side).length){battle.phase='end';battle.result=f.side==='味方'?'敗北…':'勝利！';recordMatchResult();settleBattleGold();bLog('味方への爆発が先に命中！ '+battle.result);actionEffects=null;renderBattle();storeBattle();return}
   for(const t of opponents){const dmg=Math.min(t.hp,blast);t.hp-=dmg;bLog(t.name+'に'+dmg+'ダメージ！');battleEffect('damage',t,dmg);if(!t.hp)battleEffect('ko',t)}
  }}
  actionEffects=null;rareAutoRevive();recoverTurnMp();if(checkResult()){renderBattle();return}finishTurn();renderBattle();storeBattle();
@@ -1532,6 +1543,7 @@ if(battleMode==='arena'&&battle.phase==='end'&&battle.result!=='勝利！'){
  const summary=add('div','🏯 無限の塔：'+arenaWins+'階突破で終了\n🎲 アイテムドロップ率：'+Math.min(100,arenaWins)+'％\n'+(battle.arenaRewardText||'🎒 報酬を確認しています。'),box,'quest-status');
  summary.style.whiteSpace='pre-line';summary.style.padding='14px';summary.style.margin='12px 0';summary.style.fontWeight='bold';
 }
+if(['quest','arena'].includes(battleMode)&&battle.phase==='end')add('p','💰 今回の戦闘で獲得：'+(Number(battle.goldEarned)||0)+'G ／ 所持金 '+goldText(),box,'quest-status');
 if((battleMode==='friend'||battleMode==='training')&&battle.phase==='end')add('p',(battleMode==='training'?'🏋️ 訓練の結果：':'🤝 友達対戦の結果：')+battle.result+' ／ '+battle.turn+'ターン（報酬・育成記録への影響なし）',box,'note');
 let log=add('div',battle.logs.join('\n'),box,'battle-log');
 if(battle.phase==='running')add('p','行動中… モンスターごとに結果を表示しています。',box,'mini');
@@ -1872,13 +1884,41 @@ function renderMasterItems(){
 function renderMaster(){
  const master=state.master;
  $('master-name-display').textContent=master.name;
- $('master-summary').textContent=master.name+' ／ 育成 '+(Number(state.total)||0)+'匹 ／ 勝利 '+(Number(master.stats.wins)||0)+'回';
- const items=[['育成した卵',Number(state.total)||0],['育成完了',Number(state.completed)||0],['放牧',Number(state.abandoned)||0],['戦闘数（記録開始後）',Number(master.stats.battles)||0],['勝利数（記録開始後）',Number(master.stats.wins)||0],['無限の塔 最高到達階（突破済）',(Number(state.arenaBest)||0)+'階'],['牧場のモンスター',state.roster.length]];
+ $('master-summary').textContent=master.name+' ／ 💰 '+goldText()+' ／ 育成 '+(Number(state.total)||0)+'匹 ／ 勝利 '+(Number(master.stats.wins)||0)+'回';
+ const items=[['💰 所持金',goldText()],['育成した卵',Number(state.total)||0],['育成完了',Number(state.completed)||0],['放牧',Number(state.abandoned)||0],['戦闘数（記録開始後）',Number(master.stats.battles)||0],['勝利数（記録開始後）',Number(master.stats.wins)||0],['無限の塔 最高到達階（突破済）',(Number(state.arenaBest)||0)+'階'],['牧場のモンスター',state.roster.length]];
  $('master-records').replaceChildren();
  for(const [label,value] of items){const div=document.createElement('div');div.className='master-record';const title=document.createElement('span');title.textContent=label;const val=document.createElement('b');val.textContent=value.toLocaleString('ja-JP');div.append(title,val);$('master-records').appendChild(div)}
  renderQuestMaster();
  renderMasterItems();
+ const sg=$('shop-gold');if(sg)sg.textContent='💰 所持金：'+goldText();
 }
+// Ver.4.3.25 技屋さん：育成完了後の習得可能技のみ入れ替え。個体別累計変更回数で課金。
+function shopCost(mon){const n=Math.max(0,Math.floor(Number(mon.moveShopChanges)||0));return n===0?100:n===1?200:n===2?300:500}
+function shopEligible(mon){return (mon.availableMoves||[]).filter(id=>moveById(id)&&(!fourthMove(mon)||id!==fourthMove(mon).id))}
+function renderMoveShop(){
+ const sel=$('move-shop-mon'),old=sel.value;sel.replaceChildren();
+ for(const mon of state.roster){const o=document.createElement('option');o.value=String(mon.id);o.textContent=(mon.nickname||mon.name)+'（第'+mon.id+'号）';sel.appendChild(o)}
+ if([...sel.options].some(o=>o.value===old))sel.value=old;
+ $('move-shop-wallet').textContent='💰 マスターの所持金：'+goldText();
+ const box=$('move-shop-detail');box.replaceChildren();const mon=state.roster.find(x=>String(x.id)===sel.value);
+ if(!mon){box.textContent='牧場に育成完了モンスターがいません。';return}
+ const cost=shopCost(mon),known=shopEligible(mon),equipped=(mon.moves||[]).filter(id=>known.includes(id));
+ const p=document.createElement('p');p.textContent='変更済み '+(Number(mon.moveShopChanges)||0)+'回 ／ 次の変更 '+cost+'G';box.appendChild(p);
+ const p2=document.createElement('p');p2.textContent='現在の技：'+(mon.moves||[]).map(id=>moveById(id)?.name||id).join('・');box.appendChild(p2);
+ if(!known.length||!equipped.length){const n=document.createElement('p');n.textContent='変更できる技がありません。';box.appendChild(n);return}
+ const from=document.createElement('select'),to=document.createElement('select');
+ for(const id of equipped){const o=document.createElement('option');o.value=id;o.textContent=moveById(id).name;from.appendChild(o)}
+ function refreshTo(){to.replaceChildren();for(const id of known.filter(id=>!(mon.moves||[]).includes(id))){const o=document.createElement('option');o.value=id;o.textContent=moveById(id).name;to.appendChild(o)}}
+ refreshTo();if(!to.options.length){const n=document.createElement('p');n.textContent='習得可能な技はすべて覚えています。';box.appendChild(n);return}
+ const l1=document.createElement('label');l1.textContent='入れ替える技';l1.appendChild(from);box.appendChild(l1);
+ const l2=document.createElement('label');l2.textContent='新しく覚える技';l2.appendChild(to);box.appendChild(l2);
+ for(const el of [from,to]){el.style.display='block';el.style.width='100%';el.style.padding='10px';el.style.margin='7px 0 15px'}
+ const btn=document.createElement('button');btn.className='full primary';btn.textContent='💰 '+cost+'Gで技を変更';btn.disabled=(Number(state.master.gold)||0)<cost;
+ btn.onclick=()=>{const current=state.roster.find(x=>x.id===mon.id);if(!current)return;const price=shopCost(current);const oldId=from.value,newId=to.value;if(!shopEligible(current).includes(newId)||!(current.moves||[]).includes(oldId)||current.moves.includes(newId))return alert('技の選択を確認してください。');if((Number(state.master.gold)||0)<price)return alert('お金が足りません。');if(!confirm((current.nickname||current.name)+'の「'+moveById(oldId).name+'」を「'+moveById(newId).name+'」に変更しますか？\n料金：'+price+'G'))return;const idx=current.moves.indexOf(oldId);current.moves[idx]=newId;current.moveShopChanges=(Number(current.moveShopChanges)||0)+1;state.master.gold-=price;save();renderMoveShop();render();alert('技を変更しました！')};box.appendChild(btn);
+}
+$('open-move-shop').onclick=()=>{if(breedingRegistrationPending()){syncRegistrationLock();return}$('move-shop-screen').hidden=false;renderMoveShop()};
+$('move-shop-back').onclick=()=>{$('move-shop-screen').hidden=true;render()};
+$('move-shop-mon').onchange=renderMoveShop;
 // Ver.3.6.1 モンスター図鑑。進化候補の定義を元に全種族を列挙する。
 const dexNames=[...new Set([...species.map(v=>v[0]),...branches.flat().map(v=>v[0]),...extraEvo.map(v=>v.name),...Object.keys(rareSpecs),...newEvolutions.map(v=>v.name),'闇のぴょこ'])];
 const dexLore={
