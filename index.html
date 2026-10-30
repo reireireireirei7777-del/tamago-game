@@ -140,7 +140,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.28';
+const APP_VERSION='Ver.4.3.29';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -1940,7 +1940,6 @@ const shopTrainingPrices={consomme_soup:200,magic_soup:200,power_apple:300,guard
 let moveShopTab='moves';
 function renderShopItems(){
  const root=$('move-shop-items-pane');root.replaceChildren();
- const greeting=document.createElement('p');greeting.textContent='いい品が入ってるぜ！ ゆっくり見ていきな！';greeting.style.fontWeight='bold';root.appendChild(greeting);
  const info=document.createElement('p');info.className='note';info.textContent='★1育成アイテムを購入できます。購入品はマスターの持ち物に入り、育成時に使用できます。';root.appendChild(info);
  for(const item of itemCatalog.training){
   const price=shopTrainingPrices[item.id];if(!price)continue;
