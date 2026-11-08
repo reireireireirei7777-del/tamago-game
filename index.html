@@ -109,7 +109,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 /* Ver.4.3.11 アイテム管理画面 */
 .item-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:8px 0}.item-tabs button{font-size:12px;min-height:36px}.item-tabs button.selected{background:#a7d18e}.item-entry{background:#e3edd9;border:1px solid #b2c7a9;border-radius:7px;padding:9px;margin:6px 0}.item-entry .row{align-items:flex-start}.item-entry strong{font-size:13px}.item-entry .badge{white-space:nowrap}.item-entry .note{margin-top:5px}
 
-/* Ver.4.3.41: event bosses use the same full-width presentation as other bosses. */
+/* Ver.4.3.42: event bosses use the same full-width presentation as other bosses. */
 #battle-ui .fighter.event-giant-boss{background:linear-gradient(145deg,#e8ddf6,#d4dfeb);border:2px solid #9271b2;text-align:center;padding:12px 8px;}
 #battle-ui .fighter.event-giant-boss>b{display:block;font-size:19px;margin-bottom:6px;}
 #battle-ui .fighter.event-giant-boss>canvas{display:block;width:min(100%,300px);height:auto;aspect-ratio:280/245;margin:4px auto 9px;object-fit:contain;filter:drop-shadow(0 5px 6px #888);animation:boss-breathe 2s ease-in-out infinite alternate;}
@@ -157,7 +157,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.41';
+const APP_VERSION='Ver.4.3.42';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -1110,8 +1110,24 @@ if(!xEffect){battleEffect('actor',f);if(statusBeforeAction(f))return;}f._hourgla
  }
 if(f.stun){f.stun=false;bLog(f.name+'は動けない！');return}
 if(f.demonTurns>0){const foes=alive(f.side==='味方'?'敵':'味方');const t=foes[Math.floor(Math.random()*foes.length)];if(t){bLog(f.name+'は大魔神化して暴れた！');hurt(f,t,2)}f.demonTurns--;if(f.demonTurns===0){f.stats[2]=Math.round(f.stats[2]/2);f.stats[4]=Math.round(f.stats[4]/2);bLog(f.name+'の大魔神化が解けた！')}return}
-if(cmd==='event_charge'){f.eventCharged=true;bLog('🔋 '+f.name+'は荷電粒子砲のエネルギーを充填している！');return}
-if(cmd==='event_cannon'){f.eventCharged=false;f.eventCannonCount=(f.eventCannonCount||0)+1;const foes=alive(f.side==='味方'?'敵':'味方');const t=foes[Math.floor(Math.random()*foes.length)];if(t){bLog('💥 '+f.name+'の荷電粒子砲！');hurt(f,t,1.5,true)}return}
+if(cmd==='event_charge'){
+ f.eventCharged=true;
+ bLog('🔋 '+f.name+'は荷電粒子砲のエネルギーを充填している！');
+ const restored=Math.min(f.maxHp-f.hp,Math.max(1,Math.round(f.maxHp*.10)));
+ if(restored>0){f.hp+=restored;bLog('🔧 '+f.name+'の自己修復装置が作動！ HPが'+restored+'回復した！');battleEffect('heal',f,restored)}
+ return;
+}
+if(cmd==='event_cannon'){
+ f.eventCharged=false;f.eventCannonCount=(f.eventCannonCount||0)+1;f.eventCannonLastTurn=battle.turn;
+ const foes=alive(f.side==='味方'?'敵':'味方');
+ if(foes.length){
+  bLog('💥 '+f.name+'の荷電粒子砲！ 味方全体に青白い光線が襲いかかる！');
+  // 魔法属性のまま、物理通常攻撃の約1.8倍を基準に威力を算出する。
+  const cannonPower=1.8*(Math.max(1,f.stats[2])*.5)/(Math.max(1,f.stats[3])*.58);
+  foes.forEach(t=>{if(t.hp>0)hurt(f,t,cannonPower,true)});
+ }
+ return;
+}
 if(f.speciesName==='じどうはんばいき')cmd='poisonjuice';
 if(cmd==='guard'){bLog(f.name+'は守りを固めた！');return}
 if(cmd==='attack'){let enemies=alive(f.side==='味方'?'敵':'味方');let t=enemies.find(x=>x.i===targetIndex)||enemies[0];if(t){bLog(f.name+'の攻撃！');hurt(f,t)}return}
@@ -1340,7 +1356,7 @@ function recordMatchResult(){
 function checkResult(){
 if(alive('敵').length===0||alive('味方').length===0){battle.phase='end';battle.result=alive('敵').length===0?'勝利！':'敗北…';recordMatchResult();settleBattleGold();if(battleMode==='arena'&&battle.result==='勝利！'){arenaWins++;saveArenaRecord()}if(battleMode==='arena'&&battle.result!=='勝利！'){saveArenaRecord();const towerReward=arenaFinalReward();bLog('🏯 '+arenaWins+'階突破・最終報酬：'+towerReward.replace(/\n/g,' ／ '));storeBattle();renderMaster()}bLog('対戦終了！ '+battle.result+'（牧場のモンスターは無事です）');return true}return false}
 const battleWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function copyFighter(f){return {phoenixUsed:f.phoenixUsed,crownUsed:f.crownUsed,wingsUsed:f.wingsUsed,hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null,demonTurns:f.demonTurns,eventCharged:f.eventCharged,eventCannonCount:f.eventCannonCount,eventDemonUsed:f.eventDemonUsed,stats:[...f.stats]}}
+function copyFighter(f){return {phoenixUsed:f.phoenixUsed,crownUsed:f.crownUsed,wingsUsed:f.wingsUsed,hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null,demonTurns:f.demonTurns,eventCharged:f.eventCharged,eventCannonCount:f.eventCannonCount,eventCannonLastTurn:f.eventCannonLastTurn,eventDemonUsed:f.eventDemonUsed,stats:[...f.stats]}}
 function restoreFighter(f,s){Object.assign(f,s)}
 function showBattleEffect(ev){
  if(!ev||!ev.side)return;
@@ -1367,7 +1383,7 @@ async function runTurn(replaySeed=null){
  storeBattle(beforeTurn);
  try{
  battle.phase='running';pendingTarget=null;
- let enemyChoices=alive('敵').map(cpuCommand);if(battleMode==='quest'&&questRun&&questRun.stage===2&&!questRun.eventId&&questRun.difficulty>=4&&battle.turn%3===0){enemyChoices=alive('敵').map(f=>({f,cmd:questBossAttack(f),target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}));}if(battleMode==='arena'&&arenaWins+1>=30){alive('敵').filter(f=>f.boss).forEach(f=>enemyChoices.push(cpuCommand(f)))}if(battleMode==='quest'&&questRun?.stage===2&&questRun.eventId){enemyChoices=alive('敵').map(f=>{let cmd;if(questRun.eventId==='mecha_raid'){cmd=f.eventCharged?'event_cannon':(f.hp/f.maxHp<=.75&&(f.eventCannonCount||0)<2&&battle.turn%3===0?'event_charge':'attack')}else{cmd=f.demonTurns>0?'attack':(!f.eventDemonUsed&&f.hp/f.maxHp<=.7?'demon_form':'attack');if(cmd==='demon_form')f.eventDemonUsed=true}return {f,cmd,target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}})}let choices=[...battle.queue,...enemyChoices];
+ let enemyChoices=alive('敵').map(cpuCommand);if(battleMode==='quest'&&questRun&&questRun.stage===2&&!questRun.eventId&&questRun.difficulty>=4&&battle.turn%3===0){enemyChoices=alive('敵').map(f=>({f,cmd:questBossAttack(f),target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}));}if(battleMode==='arena'&&arenaWins+1>=30){alive('敵').filter(f=>f.boss).forEach(f=>enemyChoices.push(cpuCommand(f)))}if(battleMode==='quest'&&questRun?.stage===2&&questRun.eventId){enemyChoices=alive('敵').map(f=>{let cmd;if(questRun.eventId==='mecha_raid'){cmd=f.eventCharged?'event_cannon':(f.hp/f.maxHp<=.75&&(f.eventCannonCount||0)<2&&battle.turn%3===0&&(f.eventCannonLastTurn==null||battle.turn>f.eventCannonLastTurn+1)?'event_charge':'attack')}else{cmd=f.demonTurns>0?'attack':(!f.eventDemonUsed&&f.hp/f.maxHp<=.7?'demon_form':'attack');if(cmd==='demon_form')f.eventDemonUsed=true}return {f,cmd,target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}})}let choices=[...battle.queue,...enemyChoices];
 // ゴールドキメラは行動選択時に2回分指定済み
  battle.all.forEach(x=>{x.shield=false;x.cover=false;x.counter=false;x.immortalActive=false;x.immortalDamage=0});
  choices.filter(x=>x.cmd==='guard').forEach(x=>x.f.shield=true);
@@ -1690,7 +1706,7 @@ function questRemoveDuplicateEvents(){
  return true;
 }
 function questRefresh(){const today=questDay();
- // Ver.4.3.41: 本日分の「クリア済み」だけを一度解除。通算実績・報酬・他の日付には触れない。
+ // Ver.4.3.42: 本日分の「クリア済み」だけを一度解除。通算実績・報酬・他の日付には触れない。
  // 進行中の戦闘があっても、その進行状況は維持する。
  if(questData.day===today&&questData.clearReset4338!==today){
   for(const q of questData.quests){q.done=false}
