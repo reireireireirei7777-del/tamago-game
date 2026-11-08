@@ -149,7 +149,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.37';
+const APP_VERSION='Ver.4.3.38';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -1682,6 +1682,14 @@ function questRemoveDuplicateEvents(){
  return true;
 }
 function questRefresh(){const today=questDay();
+ // Ver.4.3.38: 本日分の「クリア済み」だけを一度解除。通算実績・報酬・他の日付には触れない。
+ // 進行中の戦闘があっても、その進行状況は維持する。
+ if(questData.day===today&&questData.clearReset4338!==today){
+  for(const q of questData.quests){q.done=false}
+  questData.clearReset4338=today;
+  questSave();
+ }
+
  // Ver.4.3.37: today's lineup gets a one-time new draw after updating.
  // If a quest is in progress, defer until it ends to preserve battle/quest state.
  if(questData.day===today&&questData.reroll4337!==today&&!questRun){
