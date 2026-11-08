@@ -108,7 +108,16 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 .story-progress{letter-spacing:.05em;font-weight:700}
 /* Ver.4.3.11 アイテム管理画面 */
 .item-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:8px 0}.item-tabs button{font-size:12px;min-height:36px}.item-tabs button.selected{background:#a7d18e}.item-entry{background:#e3edd9;border:1px solid #b2c7a9;border-radius:7px;padding:9px;margin:6px 0}.item-entry .row{align-items:flex-start}.item-entry strong{font-size:13px}.item-entry .badge{white-space:nowrap}.item-entry .note{margin-top:5px}
-</style></head><body><main><h1>🥚 たまご育成 <span class="badge" id="main-version"></span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
+</style><style>
+.event-intro{position:fixed;inset:0;z-index:9999;background:#07131e;color:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;font-family:serif;text-align:center;padding:22px;box-sizing:border-box}
+.event-intro-scene{position:absolute;inset:0;opacity:.7;transition:background 1s;background:linear-gradient(160deg,#12231b,#35683b 65%,#17291b)}
+.event-intro-scene.city{background:linear-gradient(160deg,#1b2d4b,#586978 60%,#462923)}
+.event-intro-art{position:relative;font-size:clamp(100px,32vw,190px);filter:drop-shadow(0 12px 18px #000);animation:eventBob 2s ease-in-out infinite}
+.event-intro-words{position:relative;max-width:440px;min-height:100px;margin-top:20px;font-size:20px;line-height:1.8;text-shadow:0 3px 6px #000;background:#07131eaa;padding:12px;border:1px solid #ffffff66;border-radius:10px}
+.event-intro-skip{position:absolute;top:18px;right:16px;z-index:2;padding:10px 15px;background:#ffffffdd;color:#162432;border:0;border-radius:7px}
+@keyframes eventBob{50%{transform:translateY(-10px) scale(1.035)}}
+</style>
+</head><body><main><h1>🥚 たまご育成 <span class="badge" id="main-version"></span></h1><div class="sub">7日間で奇跡の個体を生み出せ！</div>
 <section class="card"><div class="row"><strong id="name">はじめての卵</strong><span id="day" class="badge">待機中</span></div><div class="lcd"><canvas id="sprite" width="160" height="120"></canvas></div><div class="row" style="margin-top:9px"><span id="status">卵を孵化させよう</span><span id="count" class="badge"></span></div><div id="hatch-omen" class="hatch-omen" hidden aria-live="polite"></div></section>
 <section class="card stats-card"><h2>能力値</h2><div id="stats" class="stats"></div></section>
 <section class="card comment-card"><h2>育成コメント</h2><div id="comment" class="comment" aria-live="polite">卵を孵化させよう！</div></section>
@@ -140,7 +149,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.29';
+const APP_VERSION='Ver.4.3.33';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -158,13 +167,19 @@ const newEvolutions=[
  {name:'スーパーエクスプレス',bonus:[65,5,55,0,55,20],cond:(s,m)=>(m.actionCounts?.['走る']||0)>=4&&s[2]>=150},
  {name:'ブリキの人形',bonus:[45,35,20,35,20,45],cond:(s,m)=>(m.actionCounts?.['勉強する']||0)>=2&&(m.actionCounts?.['自由にさせる']||0)>=2},
  {name:'女王蜂',bonus:[35,65,10,60,25,15],cond:(s,m)=>(m.actionCounts?.['勉強する']||0)>=3&&s[3]>=160},
- {name:'古代のロボ',bonus:[85,15,25,5,0,75],cond:(s,m)=>(m.actionCounts?.['鍛える']||0)>=3&&s[5]>=180}
+ {name:'古代のロボ',bonus:[85,15,25,5,0,75],cond:(s,m)=>(m.actionCounts?.['鍛える']||0)>=3&&s[5]>=180},
+ {name:'マジン',bonus:[70,20,80,20,5,35],cond:(s,m)=>!!m.trainingEvolutionItems?.demon_flute,desc:'育成中に「魔神の笛」を使用'},
+ {name:'メカドラゴン',bonus:[80,15,45,15,10,75],cond:(s,m)=>!!m.trainingEvolutionItems?.mecha_heart,desc:'育成中に「メカ心臓」を使用'},
+ {name:'魔界の遣唐使',bonus:[20,70,5,75,25,15],cond:s=>s[3]>=180&&s[1]>=150&&s[2]<=80},
+ {name:'人力飛行機',bonus:[20,10,20,15,85,10],cond:s=>s[4]>=170&&s[2]<=100&&s[5]<=100},
+ {name:'もぐら',bonus:[60,5,30,5,15,65],cond:s=>s[5]>=160&&s[0]>=200&&s[4]<=100},
+ {name:'光速ソルジャー',bonus:[20,15,55,10,100,10],cond:s=>s[4]>=220&&s[2]>=150}
 ];
 const darkPyoko={name:'闇のぴょこ',bonus:[0,0,0,0,0,0],special:true,desc:'ぴょこが素早さ130以上で怪我をしたときに現れる'};
 const extraEvo=[...evo.map(e=>({name:e[0],bonus:e[1],cond:e[2]})),{name:'魔王の使い',bonus:[15,65,35,65,15,10],cond:s=>s[1]>=170&&s[3]>=180},{name:'双刃の獣',bonus:[20,5,65,0,60,5],cond:s=>s[2]>=160&&s[4]>=160},{name:'不滅の巨人',bonus:[95,0,25,0,0,80],cond:s=>s[0]>=230&&s[5]>=160}];
 // Ver.3.5.4: 全進化先共通の耐久・MP底上げ。既存個体は変更せず、新規進化時のみ適用。
 // Ver.3.5.4: 基本15種だけ歴戦成長。素体データとランキングは変更しない。
-const basicEvolutionNames=new Set(branches.flat().map(x=>x[0]));
+const basicEvolutionNames=new Set([...branches.flat().map(x=>x[0]),'人力飛行機','光速ソルジャー']);
 const conditionEvolutionNames=new Set([...extraEvo.map(x=>x.name),...newEvolutions.map(x=>x.name)]);
 const growthSteps=[[0,0],[10,.02],[25,.04],[50,.07],[75,.10],[100,.13]];
 function growthRate(mon){
@@ -173,7 +188,7 @@ function growthRate(mon){
  for(let i=growthSteps.length-1;i>=0;i--)if(wins>=growthSteps[i][0])return growthSteps[i][1];
  return 0;
 }
-function evolutionCategory(name){if(species.some(x=>x[0]===name))return '🥚 進化前の姿（進化ボーナスなし）';return basicEvolutionNames.has(name)?'🟢 歴戦成長型（100勝で全能力＋13％）':conditionEvolutionNames.has(name)?'🔵 専用技型': '🟣 特殊能力型'}
+function evolutionCategory(name){if(species.some(x=>x[0]===name))return '🥚 進化前の姿（進化ボーナスなし）';return basicEvolutionNames.has(name)?'🟢 歴戦成長型（100勝で全能力＋13％）':['メカドラゴン','もぐら'].includes(name)?'🟣 特殊能力型':conditionEvolutionNames.has(name)?'🔵 専用技型': '🟣 特殊能力型'}
 const evolutionVitalBonus=[75,30];
 function boostedBonus(bonus){return bonus.map((v,i)=>v+(i===0?evolutionVitalBonus[0]:i===1?evolutionVitalBonus[1]:0))}
 
@@ -394,10 +409,18 @@ if(name==='メタルぞんび')m.stats=metalStats(m.stats.reduce((a,b)=>a+b,0));
 save();render();requestAnimationFrame(()=>setTimeout(()=>$('moves-card').scrollIntoView({behavior:'smooth',block:'start'}),60))}
 
 const moveBook=[
+{id:'demon_form',name:'大魔神化',mp:30,desc:'2ターン力と素早さ2倍・自動通常攻撃'},
+{id:'demon_edict',name:'魔界の勅書',mp:35,desc:'敵全体に魔法攻撃＋20%でしびれ'},
+
 {id:'yawnall',name:'大あくび',mp:40,desc:'自分以外の敵味方全員を各45％で眠らせる',exclusive:'アクビ'},
 {id:'tinrandom',name:'不思議なぜんまい',mp:30,desc:'敵1匹に70％でランダムな状態異常',exclusive:'ブリキの人形'},
 {id:'beesummon',name:'働き蜂を呼ぶ',mp:45,desc:'2〜5ターン、敵全体へ毎ターン15〜30の追加ダメージ',exclusive:'女王蜂'},
 {id:'poisonjuice',name:'どくジュース',mp:0,desc:'先制。残りHP＋MPを攻撃力に加算。20％で敵を回復',exclusive:'じどうはんばいき'},
+// Ver.4.3.30: 新しい状態異常技とランダム技。
+{id:'poison_attack',name:'どく攻撃',mp:12,desc:'敵1匹を物理攻撃。3％で即死（通常ボスにも有効）',cond:s=>s[2]>=100&&s[3]>=65},
+{id:'paralysis_attack',name:'まひ攻撃',mp:10,desc:'敵1匹を物理攻撃。15％で既存の「しびれ」を付与',cond:s=>s[2]>=75&&s[4]>=90},
+{id:'sleep_attack',name:'眠い攻撃',mp:10,desc:'敵1匹を物理攻撃。15％で眠りを付与',cond:s=>s[3]>=85&&s[1]>=60},
+{id:'x_attack',name:'Xアタック',mp:20,desc:'全ての技（Xアタックを除く）からランダムに1つの効果を発動',cond:s=>s[1]>=150&&s[3]>=165},
 {id:'focus',name:'気合斬り',mp:0,desc:'敵1匹への堅実な物理攻撃',cond:s=>true},
 {id:'brace',name:'鉄壁の構え',mp:4,desc:'自分の防御を高める',cond:s=>true},
 {id:'pulse',name:'生命の鼓動',mp:6,desc:'自分のHPを少し回復',cond:s=>true},
@@ -775,7 +798,7 @@ function restoreBattle(){
 }
 
 const moveById=id=>moveBook.find(v=>v.id===id);
-function mkF(mon,side,i){let st=migrateStats(side==='味方'&&Number(mon.id)>0?equippedStats(mon):[...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {equipmentId:side==='味方'&&Number(mon.id)>0?(mon.equipmentId||null):null,id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
+function mkF(mon,side,i){let st=migrateStats(side==='味方'&&Number(mon.id)>0?equippedStats(mon):[...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {equipmentId:side==='味方'&&Number(mon.id)>0?(mon.equipmentId||null):null,id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon'],'マジン':['demon_form'],'魔界の遣唐使':['demon_edict']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
 
 function initRareBattle(party,enemyMons){
  let candidates=[...branches.flat().map(x=>x[0]),...extraEvo.map(x=>x.name),...Object.keys(rareSpecs).filter(x=>x!=='カオスエッグ')];
@@ -968,7 +991,7 @@ function amount(n){return Math.max(1,Math.round(n*(.9+Math.random()*.2)))}
 const STATUS_META={sleep:{mark:'💤',label:'ねむり'},burn:{mark:'🔥',label:'やけど'},paralysis:{mark:'⚡',label:'しびれ'}};
 function applyStatus(f,kind){
  if(!f||f.hp<=0||!STATUS_META[kind]||f.status)return false;
- f.status={kind,left:kind==='sleep'?random(1,3):3};
+ f.status={kind,left:kind==='sleep'?random(1,3):3,hitCount:0};
  bLog(f.name+'は'+STATUS_META[kind].label+'状態になった！ '+STATUS_META[kind].mark);
  return true;
 }
@@ -1016,6 +1039,8 @@ function soulDrain(a,actual,wasAlive,target){
  if(wasAlive&&target.hp===0&&a.hp>0){bLog(a.name+'は敵の魂を捕食した！');heal(a,Math.round(a.maxHp*.2));}
 }
 function hurt(a,d,power=1,magic=false,ignoreDef=false,critMultiplier=1){
+if(d.speciesName==='もぐら'&&Math.random()<.15){bLog(d.name+'は地中に潜って回避した！');battleEffect('miss',d);return 0}
+if(d.speciesName==='メカドラゴン'&&!magic)power*=.8;
 if(d.hp<=0)return;
 let target=d;
 if(!magic){let cover=alive(d.side).find(x=>x.cover&&x!==d);if(cover){target=cover;bLog(cover.name+'が身代わりになった！')}}
@@ -1039,7 +1064,7 @@ const wasAlive=target.hp>0;damage=takeDamage(target,damage);
 if(target.speciesName==='ふたごスライム'&&a!==target&&a.hp>0){let reflect=Math.min(a.hp,Math.max(1,Math.round(damage*.3)));a.hp-=reflect;bLog(a.name+'に'+reflect+'の反射ダメージ！');battleEffect('damage',a,reflect);if(a.hp===0)battleEffect('ko',a)}
 if(!magic&&equipHas(target,'reflect_mirror')&&a!==target&&a.hp>0){const reflected=Math.min(a.hp,Math.floor(damage*.2));if(reflected>0){a.hp-=reflected;bLog(a.name+'に反射ダメージ'+reflected+'！');battleEffect('damage',a,reflected);if(a.hp===0)battleEffect('ko',a)}}
 bLog(target.name+'に'+damage+'ダメージ！'+(critical?' ★会心の一撃！':'')+(target.hp===0?' '+target.name+'は倒れた！':''));battleEffect('damage',target,damage,critical);if(target.hp===0)battleEffect('ko',target);soulDrain(a,damage,wasAlive,target);equipAfterAttack(a,damage,magic);
-if(!magic&&damage>0&&target.status?.kind==='sleep'){target.status=null;bLog(target.name+'は攻撃を受けて目を覚ました！')}
+if(damage>0&&target.status?.kind==='sleep'){const st=target.status;st.hitCount=(st.hitCount||0)+1;if(st.hitCount>=2||Math.random()<.7){target.status=null;bLog(target.name+'は攻撃を受けて目を覚ました！')}else bLog(target.name+'は攻撃を受けても眠ったままだ！ 💤')}
 if(!magic&&!equipCounterActive&&equipHas(target,'counter_shield')&&target.hp>0&&a.hp>0&&target!==a&&Math.random()<.1){bLog(target.name+'の反撃の盾が発動！');equipCounterActive=true;try{hurt(target,a,.55,false,false)}finally{equipCounterActive=false}}
 if(target.counter&&target.hp>0&&!magic&&a.hp>0&&target!==a){target.counter=false;bLog(target.name+'の反撃！');hurt(target,a,.55,false,false)}
 }
@@ -1056,10 +1081,10 @@ function fixedHurt(a,d,base){
 }
 function revive(f,n){if(f.hp>0){bLog(f.name+'は戦闘不能ではない！');return}f.hp=Math.max(1,Math.round(f.maxHp*n));bLog(f.name+'が復活！ HP '+f.hp+'！');battleEffect('heal',f,f.hp)}
 function heal(f,n,source=null){if(f.hp<=0)return;if(source&&source.side==='味方'&&source.i===1&&source!==f)n*=1.20;let gain=Math.min(f.maxHp-f.hp,Math.max(1,amount(n)));f.hp+=gain;bLog(f.name+'のHPが'+gain+'回復！');if(gain>0)battleEffect('heal',f,gain)}
-function useMove(f,cmd,targetIndex){
+function executeMove(f,cmd,targetIndex,xEffect=false){
 if(!battle.darkPyokoStarted){battle.darkPyokoStarted=true;for(const x of battle.all.filter(y=>y.speciesName==='闇のぴょこ'&&y.hp>0)){const enemies=alive(x.side==='味方'?'敵':'味方');if(enemies.length&&Math.random()<.2){const t=enemies[random(0,enemies.length-1)];applyStatus(t,'paralysis');bLog(x.name+'がこっそり悪さをした！')}}}
 if(f.hp<=0)return;
-battleEffect('actor',f);if(statusBeforeAction(f))return;if(f.speciesName==='ねむりひめ'&&battle.turn%2===0){
+if(!xEffect){battleEffect('actor',f);if(statusBeforeAction(f))return;}f._hourglassAction=true;if(f.speciesName==='ねむりひめ'&&battle.turn%2===0){
  const roll=Math.random(),friends=alive(f.side);
  if(roll<.4){bLog(f.name+'の「あくび」！ 何も起こらなかった。')}
  else if(roll<.7){bLog(f.name+'の「たそがれ」！ 味方全体のMPを回復！');friends.forEach(x=>{const gain=Math.min(10,x.maxMp-x.mp);x.mp+=gain;bLog(x.name+'のMPが'+gain+'回復！')})}
@@ -1067,15 +1092,31 @@ battleEffect('actor',f);if(statusBeforeAction(f))return;if(f.speciesName==='ね�
  return;
  }
 if(f.stun){f.stun=false;bLog(f.name+'は動けない！');return}
+if(f.demonTurns>0){const foes=alive(f.side==='味方'?'敵':'味方');const t=foes[Math.floor(Math.random()*foes.length)];if(t){bLog(f.name+'は大魔神化して暴れた！');hurt(f,t,2)}f.demonTurns--;if(f.demonTurns===0){f.stats[2]=Math.round(f.stats[2]/2);f.stats[4]=Math.round(f.stats[4]/2);bLog(f.name+'の大魔神化が解けた！')}return}
+if(cmd==='event_charge'){f.eventCharged=true;bLog('🔋 '+f.name+'は荷電粒子砲のエネルギーを充填している！');return}
+if(cmd==='event_cannon'){f.eventCharged=false;f.eventCannonCount=(f.eventCannonCount||0)+1;const foes=alive(f.side==='味方'?'敵':'味方');const t=foes[Math.floor(Math.random()*foes.length)];if(t){bLog('💥 '+f.name+'の荷電粒子砲！');hurt(f,t,1.5,true)}return}
 if(f.speciesName==='じどうはんばいき')cmd='poisonjuice';
 if(cmd==='guard'){bLog(f.name+'は守りを固めた！');return}
-if(cmd==='attack'){let enemies=alive(f.side==='味方'?'敵':'味方');let t=enemies.find(x=>x.i===targetIndex)||enemies[0];if(t){bLog(f.name+'の攻撃！');hurt(f,t);if(equipHas(f,'time_hourglass')&&f.hp>0&&Math.random()<.2){const next=alive(t.side).find(x=>x.i===targetIndex)||alive(t.side)[0];if(next){bLog(f.name+'の時の砂時計！ 追加攻撃！');hurt(f,next)}}}return}
-let mv=moveById(cmd);if(['revive','forestrevive'].includes(cmd)&&!battle.all.some(x=>x.side===f.side&&x.hp<=0)){bLog('蘇生対象がいない！');return}if(!mv||!f.moves.includes(cmd)||f.mp<mv.mp){useMove(f,'attack',targetIndex);return}
-const equipMpCost=equipHas(f,'archmage_staff')?Math.ceil(mv.mp*1.2):mv.mp;if(f.mp<equipMpCost){useMove(f,'attack',targetIndex);return}f.mp-=equipMpCost;bLog(f.name+'の「'+mv.name+'」！');
+if(cmd==='attack'){let enemies=alive(f.side==='味方'?'敵':'味方');let t=enemies.find(x=>x.i===targetIndex)||enemies[0];if(t){bLog(f.name+'の攻撃！');hurt(f,t)}return}
+let mv=moveById(cmd);if(['revive','forestrevive'].includes(cmd)&&!battle.all.some(x=>x.side===f.side&&x.hp<=0)){bLog('蘇生対象がいない！');return}if(!mv||(!xEffect&&!f.moves.includes(cmd))||(!xEffect&&f.mp<mv.mp)){executeMove(f,'attack',targetIndex,xEffect);return}
+const equipMpCost=equipHas(f,'archmage_staff')?Math.ceil(mv.mp*1.2):mv.mp;if(!xEffect&&f.mp<equipMpCost){executeMove(f,'attack',targetIndex,xEffect);return}if(!xEffect)f.mp-=equipMpCost;bLog(f.name+'の「'+mv.name+'」！');
 let foes=alive(f.side==='味方'?'敵':'味方'),friends=alive(f.side);
 let target=foes.find(x=>x.i===targetIndex)||foes[0];
 let friend=friends.find(x=>x.i===targetIndex)||friends[0];let fallen=battle.all.filter(x=>x.side===f.side&&x.hp<=0).find(x=>x.i===targetIndex);
 switch(cmd){
+case 'demon_form':f.demonTurns=2;f.stats[2]*=2;f.stats[4]*=2;bLog('👹 '+f.name+'は大魔神と化した！ 次の2ターンは自動攻撃！');break;
+case 'demon_edict':foes.forEach(t=>{hurt(f,t,1,true);if(t.hp>0&&Math.random()<.2)applyStatus(t,'paralysis')});break;
+case 'poison_attack':if(target){hurt(f,target,1);if(target.hp>0&&Math.random()<.03){const before=target.hp;target.hp=0;bLog('☠️ どく攻撃が命中！ '+target.name+'は即死した！');battleEffect('damage',target,before);battleEffect('ko',target)}}break;
+case 'paralysis_attack':if(target){hurt(f,target,1);if(target.hp>0&&Math.random()<.15)applyStatus(target,'paralysis')}break;
+case 'sleep_attack':if(target){hurt(f,target,1);if(target.hp>0&&Math.random()<.15&&applyStatus(target,'sleep'))target.status.left=2}break;
+case 'x_attack':{
+ const pool=moveBook.filter(v=>v.id!=='x_attack');
+ const chosen=pool[random(0,pool.length-1)];
+ bLog('❓ Xアタックの抽選結果：'+chosen.name+'！');
+ // 元の技のMPは追加消費しない。再抽選・連鎖は発生させない。
+ executeMove(f,chosen.id,targetIndex,true);
+ break;
+}
 case 'poisonjuice':if(target){const atk=f.stats[2]+f.hp+f.mp;const base=Math.max(1,atk*.5-(target.stats[5]+target.defBuff)*.2);const damage=amount(base);if(Math.random()<.2){const gain=Math.min(target.maxHp-target.hp,damage);target.hp+=gain;bLog('どくジュースはハズレ！ '+target.name+'のHPが'+gain+'回復！');battleEffect('heal',target,gain)}else{const actual=takeDamage(target,damage);bLog(target.name+'に'+actual+'ダメージ！');battleEffect('damage',target,actual);if(!target.hp)battleEffect('ko',target)}}break;
 case 'yawnall':battle.all.filter(x=>x!==f&&x.hp>0).forEach(x=>{if(Math.random()<.45)applyStatus(x,'sleep')});break;
 case 'tinrandom':if(target&&Math.random()<.7){const kinds=['sleep','burn','paralysis'];applyStatus(target,kinds[random(0,2)])}else bLog('ぜんまいは空回りした！');break;
@@ -1135,6 +1176,17 @@ case 'darkflare':if(target)hurt(f,target,2.25,true);break;
 case 'arcane':foes.forEach(x=>hurt(f,x,1.9,true));break;
 default:if(target)hurt(f,target);
 }}
+// Ver.4.3.30: 時の砂時計は通常攻撃・技・回復・補助など行動の種類を問わず20％で通常攻撃を追加。
+function useMove(f,cmd,targetIndex){
+ f._hourglassAction=false;
+ executeMove(f,cmd,targetIndex);
+ if(f._hourglassAction&&f.hp>0&&equipHas(f,'time_hourglass')&&Math.random()<.2){
+  const foes=alive(f.side==='味方'?'敵':'味方');
+  const target=foes.find(x=>x.i===targetIndex)||foes[0];
+  if(target){bLog(f.name+'の時の砂時計！ 追加攻撃！');hurt(f,target)}
+ }
+ f._hourglassAction=false;
+}
 // Ver.3.5.4: MP0の疾風斬りだけ50%で先制。その他の先制技は消費MP順に優先。
 function priority(cmd){
  if(cmd==='guard')return 100;
@@ -1271,7 +1323,7 @@ function recordMatchResult(){
 function checkResult(){
 if(alive('敵').length===0||alive('味方').length===0){battle.phase='end';battle.result=alive('敵').length===0?'勝利！':'敗北…';recordMatchResult();settleBattleGold();if(battleMode==='arena'&&battle.result==='勝利！'){arenaWins++;saveArenaRecord()}if(battleMode==='arena'&&battle.result!=='勝利！'){saveArenaRecord();const towerReward=arenaFinalReward();bLog('🏯 '+arenaWins+'階突破・最終報酬：'+towerReward.replace(/\n/g,' ／ '));storeBattle();renderMaster()}bLog('対戦終了！ '+battle.result+'（牧場のモンスターは無事です）');return true}return false}
 const battleWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function copyFighter(f){return {phoenixUsed:f.phoenixUsed,crownUsed:f.crownUsed,wingsUsed:f.wingsUsed,hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null}}
+function copyFighter(f){return {phoenixUsed:f.phoenixUsed,crownUsed:f.crownUsed,wingsUsed:f.wingsUsed,hp:f.hp,mp:f.mp,defBuff:f.defBuff,atkDebuff:f.atkDebuff,reflect:f.reflect,cover:f.cover,counter:f.counter,shield:f.shield,stun:f.stun,guardianTurns:f.guardianTurns,immortalActive:f.immortalActive,immortalDamage:f.immortalDamage,lastStandUsed:f.lastStandUsed,lastStandCrit:f.lastStandCrit,status:f.status?{...f.status}:null,demonTurns:f.demonTurns,eventCharged:f.eventCharged,eventCannonCount:f.eventCannonCount,eventDemonUsed:f.eventDemonUsed,stats:[...f.stats]}}
 function restoreFighter(f,s){Object.assign(f,s)}
 function showBattleEffect(ev){
  if(!ev||!ev.side)return;
@@ -1298,7 +1350,7 @@ async function runTurn(replaySeed=null){
  storeBattle(beforeTurn);
  try{
  battle.phase='running';pendingTarget=null;
- let enemyChoices=alive('敵').map(cpuCommand);if(battleMode==='quest'&&questRun&&questRun.stage===2&&questRun.difficulty>=4&&battle.turn%3===0){enemyChoices=alive('敵').map(f=>({f,cmd:questBossAttack(f),target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}));}if(battleMode==='arena'&&arenaWins+1>=30){alive('敵').filter(f=>f.boss).forEach(f=>enemyChoices.push(cpuCommand(f)))}let choices=[...battle.queue,...enemyChoices];
+ let enemyChoices=alive('敵').map(cpuCommand);if(battleMode==='quest'&&questRun&&questRun.stage===2&&!questRun.eventId&&questRun.difficulty>=4&&battle.turn%3===0){enemyChoices=alive('敵').map(f=>({f,cmd:questBossAttack(f),target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}));}if(battleMode==='arena'&&arenaWins+1>=30){alive('敵').filter(f=>f.boss).forEach(f=>enemyChoices.push(cpuCommand(f)))}if(battleMode==='quest'&&questRun?.stage===2&&questRun.eventId){enemyChoices=alive('敵').map(f=>{let cmd;if(questRun.eventId==='mecha_raid'){cmd=f.eventCharged?'event_cannon':(f.hp/f.maxHp<=.75&&(f.eventCannonCount||0)<2&&battle.turn%3===0?'event_charge':'attack')}else{cmd=f.demonTurns>0?'attack':(!f.eventDemonUsed&&f.hp/f.maxHp<=.7?'demon_form':'attack');if(cmd==='demon_form')f.eventDemonUsed=true}return {f,cmd,target:alive('味方').sort((a,b)=>a.hp-b.hp)[0]?.i??0}})}let choices=[...battle.queue,...enemyChoices];
 // ゴールドキメラは行動選択時に2回分指定済み
  battle.all.forEach(x=>{x.shield=false;x.cover=false;x.counter=false;x.immortalActive=false;x.immortalDamage=0});
  choices.filter(x=>x.cmd==='guard').forEach(x=>x.f.shield=true);
@@ -1530,7 +1582,7 @@ let enemies=alive('敵'),friends=alive('味方');
 if(pendingTarget){add('p','🎯 '+pendingTarget.side+'モンスターの絵をタップして対象を選んでください。',box,'target-hint');btn('対象選択をやめる',()=>{pendingTarget=null;renderBattle()},opts)}
 else btn('戦う',()=>targetMode('attack','敵'),opts);
 btn('守る',()=>chooseAction('guard',f.i),opts);
-f.moves.forEach(id=>{let mv=moveById(id);if(!mv)return;let b=btn(mv.name+' (MP'+mv.mp+')',()=>{if(['heal','rabbitheal','revive','forestrevive'].includes(id)){targetMode(id,'味方')}else if(['focus','quick','double','shadow','pierce','armorbreak','soulshock','lifeblade','smash','meteor','steel','bolt','jump','jelslash','witchdrain','windblade','turtleblast','spark','frost','darkflare','ninjacut','lastblade','split','timefreeze'].includes(id)){targetMode(id,'敵')}else chooseAction(id,f.i)},opts);
+f.moves.forEach(id=>{let mv=moveById(id);if(!mv)return;let b=btn(mv.name+' (MP'+mv.mp+')',()=>{if(['heal','rabbitheal','revive','forestrevive'].includes(id)){targetMode(id,'味方')}else if(['focus','quick','double','shadow','pierce','armorbreak','soulshock','lifeblade','smash','meteor','steel','bolt','jump','jelslash','witchdrain','windblade','turtleblast','spark','frost','darkflare','ninjacut','lastblade','split','timefreeze','poison_attack','paralysis_attack','sleep_attack','x_attack'].includes(id)){targetMode(id,'敵')}else chooseAction(id,f.i)},opts);
  b.classList.add('move-explain-btn');b.replaceChildren();
  let title=document.createElement('span');title.className='move-title';title.textContent=mv.name+'　MP '+mv.mp;
  let detail=document.createElement('span');detail.className='move-detail';detail.textContent=mv.desc||'技の効果説明は未登録です';
@@ -1579,6 +1631,7 @@ function questMatch(mon,c){if(c.kind==='stat')return c.op==='min'?questStat(mon,
 function questEligible(party,conds){return conds.every(c=>c.both?party.every(m=>questMatch(m,c)):party.some(m=>questMatch(m,c)))}
 function questGenerate(day){let seed=Number(day.replace(/-/g,''))>>>0;let r=questRandom(seed^0x5af031);let quests=[];
  for(let i=0;i<5;i++){
+  const eventRoll=r();if(eventRoll<.16){const eventId=eventRoll<.08?'demon_home':'mecha_raid';quests.push({id:day+'-'+i,title:eventId==='demon_home'?'魔神のお家':'機械竜、襲来！',eventId,star:4,conds:[],seed:Math.floor(r()*4294967295),done:false});continue}
   let roll=r()*100,star=1;for(let j=0;j<5;j++){roll-=questOdds[j];if(roll<0){star=j+1;break}}
   let conds=[];if(r()>=.2){let count=star<=2?1:star===3?1+Math.floor(r()*2):star===4?2:2+Math.floor(r()*2);
    for(let j=0;j<count;j++){
@@ -1613,7 +1666,7 @@ function openQuestScreen(){if(breedingRegistrationPending()){syncRegistrationLoc
 function closeQuestScreen(){$('quest-screen').hidden=true;document.body.classList.remove('in-quest')}
 function questButton(parent,text,fn){let b=document.createElement('button');b.textContent=text;b.onclick=fn;parent.appendChild(b);return b}
 function renderQuests(){questRefresh();$('quest-abort').hidden=!questRun;let box=$('quest-list');box.replaceChildren();$('quest-party').hidden=true;renderQuestSummary();if(questRun){let div=document.createElement('div');div.className='quest-entry';div.textContent='⚔️ 進行中：'+questRun.title+'　'+(questRun.stage+1)+'/3戦目';questButton(div,'▶ クエストの戦闘を再開',()=>{closeQuestScreen();if(battle&&battleMode==='quest'){openBattle()}else questStartStage()});box.appendChild(div);return}
- questData.quests.forEach(q=>{let div=document.createElement('div');div.className='quest-entry'+(q.done?' done':'');let h=document.createElement('h3');h.textContent='★'.repeat(q.star)+'☆'.repeat(5-q.star)+'　'+q.title;div.appendChild(h);let p=document.createElement('p');p.textContent=q.conds.length?q.conds.map(questCondText).join(' ／ '):'参加条件なし';div.appendChild(p);let p2=document.createElement('p');p2.className='note';p2.textContent=q.done?'🏆 本日クリア済み':'3連戦（通常戦2回＋ボス戦）';div.appendChild(p2);if(!q.done)questButton(div,'パーティーを選んで挑戦',()=>questChooseParty(q));box.appendChild(div)})}
+ questData.quests.forEach(q=>{let div=document.createElement('div');div.className='quest-entry'+(q.done?' done':'');let h=document.createElement('h3');h.textContent=(q.eventId?'★★★★☆（★4.5）':'★'.repeat(q.star)+'☆'.repeat(5-q.star))+'　'+q.title;div.appendChild(h);let p=document.createElement('p');p.textContent=q.conds.length?q.conds.map(questCondText).join(' ／ '):'参加条件なし';div.appendChild(p);let p2=document.createElement('p');p2.className='note';p2.textContent=q.done?'🏆 本日クリア済み':'3連戦（通常戦2回＋ボス戦）';div.appendChild(p2);if(!q.done)questButton(div,'パーティーを選んで挑戦',()=>questChooseParty(q));box.appendChild(div)})}
 function questChooseParty(q){
  questSelected=q;
  let box=$('quest-party');box.hidden=false;box.replaceChildren();
@@ -1671,15 +1724,53 @@ function questChooseParty(q){
  selectors.forEach(x=>x.onchange=validate);
  validate();box.scrollIntoView({block:'nearest',behavior:'smooth'})
 }
-function questBegin(q,party){if(battle&&battle.phase!=='end'){alert('進行中の対戦があります。先に対戦を終了してください。');return}questRun={id:q.id,title:q.title,difficulty:q.star,seed:q.seed,stage:0,partyIds:party.map(x=>x.id),party:null,stageParty:null};questData.run=questRun;questSave();closeQuestScreen();questStartStage()}
-function questEnemyMon(q,stage,i,party){let r=questRandom((q.seed+stage*977+i*73)>>>0);let entries=arenaSpecies;let entry=entries[Math.floor(r()*entries.length)];let base=party[i%party.length].stats;let scale=[.45,.65,.83,1.02,1.18][q.star-1]*(stage===0?.9:1.07);let stats=base.map((n,j)=>Math.max(j===1?12:30,Math.round(n*scale*(.85+r()*.35))));let moves=[...(arenaSpeciesSkills[entry[0]]||[]),'smash','bolt','heal','brace','quick'].filter(id=>moveById(id)&&moveById(id).mp<=stats[1]).slice(0,4);return {id:-100-stage*3-i,name:entry[0],speciesName:entry[0],type:i,stats,moves:moves.length?moves:['focus']}}
+
+function eventQuestReward(eventId){
+ const id=eventId==='demon_home'?'demon_flute':'mecha_heart';
+ questData.eventClears=questData.eventClears||{};
+ const first=!(questData.eventClears[eventId]>0);
+ const special=first||Math.random()<.5;
+ questData.eventClears[eventId]=(questData.eventClears[eventId]||0)+1;
+ if(!special){const text=questItemDrop(4,1);questSave();return 'イベント報酬：\n'+text}
+ const item=itemCatalog.training.find(x=>x.id===id);
+ state.master.inventory[id]=(Number(state.master.inventory[id])||0)+1;
+ save();questSave();return '🎁 イベント限定報酬！\n'+item.name+' ×1';
+}
+function playEventIntro(eventId,onFinish){
+ const mecha=eventId==='mecha_raid';
+ const scenes=mecha?[
+ ['🏙️','それは、いつもと変わらない昼下がりのことだった。'],
+ ['💥','突然、街に轟音が響き渡った！'],
+ ['🐉','空を覆う巨大な影。鋼鉄の身体を持つ機械の竜だった。'],
+ ['🔥','機械の竜は街を次々と破壊していく！'],
+ ['⚔️','機械竜、襲来！　メカドラゴンを止めろ！']
+ ]:[
+ ['🌲','深い森の奥。誰も足を踏み入れない場所に……'],
+ ['🏠','不思議な小さな家が一軒、建っていた。'],
+ ['🪧','玄関の表札には「まじんのおうち」と書かれている。'],
+ ['👀','扉が開く。暗闇の奥から赤い目が光った！'],
+ ['👹','魔神のお家　恐ろしい気配が近づいてくる……！']
+ ];
+ const layer=document.createElement('div');layer.className='event-intro';
+ const bg=document.createElement('div');bg.className='event-intro-scene';
+ const art=document.createElement('div');art.className='event-intro-art';
+ const words=document.createElement('div');words.className='event-intro-words';
+ const skip=document.createElement('button');skip.textContent='スキップ ▶';skip.className='event-intro-skip';
+ layer.append(bg,art,words,skip);document.body.appendChild(layer);
+ let n=0,timer,done=false;
+ function finish(){if(done)return;done=true;clearTimeout(timer);layer.remove();onFinish()}
+ function next(){if(n>=scenes.length){finish();return}const [icon,line]=scenes[n++];art.textContent=icon;words.textContent=line;bg.className='event-intro-scene '+(mecha?'city':'forest');timer=setTimeout(next,3800)}
+ layer.onclick=e=>{if(e.target===skip)return;clearTimeout(timer);next()};skip.onclick=finish;next();
+}
+function questBegin(q,party){if(battle&&battle.phase!=='end'){alert('進行中の対戦があります。先に対戦を終了してください。');return}if(q.eventId&&!q._introPlayed){q._introPlayed=true;playEventIntro(q.eventId,()=>questBegin(q,party));return}questRun={id:q.id,title:q.title,difficulty:q.star,eventId:q.eventId||null,seed:q.seed,stage:0,partyIds:party.map(x=>x.id),party:null,stageParty:null};questData.run=questRun;questSave();closeQuestScreen();questStartStage()}
+function questEnemyMon(q,stage,i,party){let r=questRandom((q.seed+stage*977+i*73)>>>0);let entries=arenaSpecies;let entry=entries[Math.floor(r()*entries.length)];let base=party[i%party.length].stats;let scale=(q.eventId?(stage===0?.83:.93):[.45,.65,.83,1.02,1.18][q.star-1]*(stage===0?.9:1.07));let stats=base.map((n,j)=>Math.max(j===1?12:30,Math.round(n*scale*(.85+r()*.35))));let moves=[...(arenaSpeciesSkills[entry[0]]||[]),'smash','bolt','heal','brace','quick'].filter(id=>moveById(id)&&moveById(id).mp<=stats[1]).slice(0,4);return {id:-100-stage*3-i,name:entry[0],speciesName:entry[0],type:i,stats,moves:moves.length?moves:['focus']}}
 const questBossProfiles=[{name:'鉄壁の守護者',emoji:'🗿',weights:[2.5,1.5,.85,.8,1.2,1.8],moves:['brace','smash','steel']},{name:'疾風の魔獣',emoji:'🐺',weights:[1.75,1.3,1.2,.9,1.85,.85],moves:['quick','windblade','smash']},{name:'深淵の魔導師',emoji:'🧙',weights:[1.8,2, .7,1.85,1.0,.85],moves:['bolt','darkflare','heal']},{name:'再生の巨人',emoji:'🌳',weights:[2.8,1.7,1,.9,.7,1.35],moves:['heal','brace','smash']},{name:'炎の暴君',emoji:'🐲',weights:[2,1.5,1.75,1.1,.95,.85],moves:['smash','dragonbreath','bolt']}];
-function questBossMon(q,party){let profile=questBossProfiles[q.seed%questBossProfiles.length];let base=party.map(f=>f.stats);let scale=[.5,.7,.95,1.18,1.35][q.star-1];let stats=base[0].map((_,i)=>Math.max(i===1?25:40,Math.round(Math.max(base[0][i],base[1][i])*scale*profile.weights[i])));let moves=profile.moves.filter(id=>moveById(id));return {id:-999,name:'ボス '+profile.name,speciesName:profile.name,type:2,stats,moves:moves.length?moves:['smash'],boss:true,bossEmoji:profile.emoji,bossStage:q.star}}
-function questStartStage(){if(!questRun)return;const q=questData.quests.find(x=>x.id===questRun.id)||{seed:questRun.seed,star:questRun.difficulty};let mons=questRun.partyIds.map(id=>state.roster.find(x=>x.id===id));if(mons.some(x=>!x)){alert('参加モンスターが牧場にいません。クエストを終了します。');questEnd(false);return}battleSequence++;pendingTarget=null;battleMode='quest';let party=questRun.party?questRun.party.map(x=>({...x})):mons.map((x,i)=>mkF(x,'味方',i));let enemyMons=questRun.stage===2?[questBossMon(q,party)]:[0,1].map(i=>questEnemyMon(q,questRun.stage,i,party));if(!questRun.party){initRareBattle(party,enemyMons);for(const f of party){if(f.speciesName==='ひよこキング'){let mate=party.find(x=>x!==f);if(mate&&!mate.chickBuff){mate.stats=mate.stats.map(v=>Math.round(v*1.1));mate.maxHp=mate.stats[0];mate.maxMp=mate.stats[1];mate.hp=Math.round(mate.hp*1.1);mate.mp=Math.round(mate.mp*1.1);mate.chickBuff=true}}}}
- party.forEach(f=>{f.shield=false;f.cover=false;f.counter=false;f.stun=false;f.defBuff=0;f.atkDebuff=0;f.reflect=0});let enemy=enemyMons.map((x,i)=>mkF(x,'敵',i));if(questRun.stage===2){const bossHpMultiplier=[3,4,5,6,8][Math.max(0,Math.min(4,(Number(questRun.difficulty)||1)-1))];for(const f of enemy){f.maxHp=Math.max(1,Math.round(f.maxHp*bossHpMultiplier));f.hp=f.maxHp;}}battle={resultKey:'q'+questRun.id+'-'+questRun.stage+'-'+Date.now(),all:[...party,...enemy],turn:1,queue:[],phase:'choose',logs:['🗺️ '+questRun.title+'　第'+(questRun.stage+1)+'/3戦！',questRun.stage===2?'ボスが現れた！ HPは見えない……':'敵のチームが現れた！'],result:null};equipStartBattle(party,enemy);questRun.stageParty=party.map(x=>({...x}));questData.run=questRun;questSave();closeQuestScreen();openBattle();storeBattle()}
+function questBossMon(q,party){if(q.eventId){const mecha=q.eventId==='mecha_raid',base=party.map(f=>f.stats);const weights=mecha?[1.15,1,1,1,.9,1.3]:[1.2,1,1.15,1,.9,1];const stats=base[0].map((_,i)=>Math.max(i===1?25:30,Math.round(Math.max(base[0][i],base[1][i])*1.1*weights[i])));return {id:-999,name:mecha?'ボス メカドラゴン':'ボス スキンヘッドの魔神',speciesName:mecha?'メカドラゴン':'スキンヘッドの魔神',type:2,stats,moves:mecha?['smash','bolt']:['smash','demon_form'],boss:true,bossEmoji:mecha?'🐉':'👹',bossStage:4,eventBoss:q.eventId}}let profile=questBossProfiles[q.seed%questBossProfiles.length];let base=party.map(f=>f.stats);let scale=[.5,.7,.95,1.18,1.35][q.star-1];let stats=base[0].map((_,i)=>Math.max(i===1?25:40,Math.round(Math.max(base[0][i],base[1][i])*scale*profile.weights[i])));let moves=profile.moves.filter(id=>moveById(id));return {id:-999,name:'ボス '+profile.name,speciesName:profile.name,type:2,stats,moves:moves.length?moves:['smash'],boss:true,bossEmoji:profile.emoji,bossStage:q.star}}
+function questStartStage(){if(!questRun)return;const q=questData.quests.find(x=>x.id===questRun.id)||{seed:questRun.seed,star:questRun.difficulty,eventId:questRun.eventId};let mons=questRun.partyIds.map(id=>state.roster.find(x=>x.id===id));if(mons.some(x=>!x)){alert('参加モンスターが牧場にいません。クエストを終了します。');questEnd(false);return}battleSequence++;pendingTarget=null;battleMode='quest';let party=questRun.party?questRun.party.map(x=>({...x})):mons.map((x,i)=>mkF(x,'味方',i));let enemyMons=questRun.stage===2?[questBossMon(q,party)]:[0,1].map(i=>questEnemyMon(q,questRun.stage,i,party));if(!questRun.party){initRareBattle(party,enemyMons);for(const f of party){if(f.speciesName==='ひよこキング'){let mate=party.find(x=>x!==f);if(mate&&!mate.chickBuff){mate.stats=mate.stats.map(v=>Math.round(v*1.1));mate.maxHp=mate.stats[0];mate.maxMp=mate.stats[1];mate.hp=Math.round(mate.hp*1.1);mate.mp=Math.round(mate.mp*1.1);mate.chickBuff=true}}}}
+ party.forEach(f=>{f.shield=false;f.cover=false;f.counter=false;f.stun=false;f.defBuff=0;f.atkDebuff=0;f.reflect=0});let enemy=enemyMons.map((x,i)=>mkF(x,'敵',i));if(questRun.stage===2){const bossHpMultiplier=[3,4,5,6,8][Math.max(0,Math.min(4,(Number(questRun.difficulty)||1)-1))];for(const f of enemy){f.maxHp=Math.max(1,Math.round(f.maxHp*(questRun.eventId?3.6:bossHpMultiplier)));f.hp=f.maxHp;}}battle={resultKey:'q'+questRun.id+'-'+questRun.stage+'-'+Date.now(),all:[...party,...enemy],turn:1,queue:[],phase:'choose',logs:['🗺️ '+questRun.title+'　第'+(questRun.stage+1)+'/3戦！',questRun.stage===2?'ボスが現れた！ HPは見えない……':'敵のチームが現れた！'],result:null};equipStartBattle(party,enemy);questRun.stageParty=party.map(x=>({...x}));questData.run=questRun;questSave();closeQuestScreen();openBattle();storeBattle()}
 function questBossHealthText(f){let r=f.hp/f.maxHp;return r>.75?'ボスはまだ余裕を見せている':r>.5?'ボスの動きに疲れが見え始めた':r>.25?'ボスは明らかに消耗している！':r>0?'ボスは満身創痍だ！':'ボスは倒れた！'}
 function questBossAttack(f){let moves=f.moves.filter(id=>{let mv=moveById(id);return mv&&mv.mp<=f.mp&&!['heal','brace'].includes(id)});return moves.length?moves[moves.length-1]:'attack'}
-function questAdvance(){if(!questRun||!battle||battle.phase!=='end')return;if(battle.result!=='勝利！'){questEnd(false);return}if(questRun.stage===2){let q=questData.quests.find(x=>x.id===questRun.id);let rewardMessage='';if(!q||!q.done){rewardMessage=questItemDrop(questRun.difficulty);if(q)q.done=true;questData.clears[questRun.difficulty-1]=(Number(questData.clears[questRun.difficulty-1])||0)+1}questEnd(true,rewardMessage);return}questRun.party=battle.all.filter(f=>f.side==='味方').map(f=>({...f}));questRun.stage++;questData.run=questRun;questSave();battle=null;storeBattle();questStartStage()}
+function questAdvance(){if(!questRun||!battle||battle.phase!=='end')return;if(battle.result!=='勝利！'){questEnd(false);return}if(questRun.stage===2){let q=questData.quests.find(x=>x.id===questRun.id);let rewardMessage='';if(!q||!q.done){rewardMessage=questRun.eventId?eventQuestReward(questRun.eventId):questItemDrop(questRun.difficulty);if(q)q.done=true;questData.clears[questRun.difficulty-1]=(Number(questData.clears[questRun.difficulty-1])||0)+1}questEnd(true,rewardMessage);return}questRun.party=battle.all.filter(f=>f.side==='味方').map(f=>({...f}));questRun.stage++;questData.run=questRun;questSave();battle=null;storeBattle();questStartStage()}
 // Ver.4.0.6: クエスト進行のみ中断。本体セーブと実績には触れない。
 function abortQuest(){
  if(!questRun){alert('進行中のクエストはありません。');return}
@@ -1696,7 +1787,7 @@ function renderQuestMaster(){const el=$('quest-master-stats');if(!el||!questData
 
 // Ver.4.3.11 アイテム台帳。効果の発動や報酬付与は次の段階で実装する。
 const itemCatalog={
- training:[{id:'consomme_soup',name:'コンソメスープ',rarity:1,effect:'HP＋10（育成中）'},{id:'magic_soup',name:'魔法のスープ',rarity:1,effect:'MP＋10（育成中）'},{id:'power_apple',name:'力のリンゴ',rarity:1,effect:'力＋5（育成中）'},{id:'guard_mushroom',name:'守りのキノコ',rarity:1,effect:'守備＋5（育成中）'},{id:'speed_fruit',name:'素早さの実',rarity:1,effect:'素早さ＋5（育成中）'},{id:'star_drop',name:'星のしずく',rarity:1,effect:'全能力＋3（育成中）'}],
+ training:[{id:'consomme_soup',name:'コンソメスープ',rarity:1,effect:'HP＋10（育成中）'},{id:'magic_soup',name:'魔法のスープ',rarity:1,effect:'MP＋10（育成中）'},{id:'power_apple',name:'力のリンゴ',rarity:1,effect:'力＋5（育成中）'},{id:'guard_mushroom',name:'守りのキノコ',rarity:1,effect:'守備＋5（育成中）'},{id:'speed_fruit',name:'素早さの実',rarity:1,effect:'素早さ＋5（育成中）'},{id:'star_drop',name:'星のしずく',rarity:1,effect:'全能力＋3（育成中）'},{id:'demon_flute',name:'魔神の笛',rarity:3,effect:'育成中に使うと「マジン」の進化条件を解放（能力値変化なし）'},{id:'mecha_heart',name:'メカ心臓',rarity:3,effect:'育成中に使うと「メカドラゴン」の進化条件を解放（能力値変化なし）'}],
  equipment:[
   {id:'wood_sword',name:'木の剣',rarity:1,effect:'力＋10',bonus:[0, 0, 10, 0, 0, 0]},
   {id:'wood_shield',name:'木の盾',rarity:1,effect:'防御＋10',bonus:[0, 0, 0, 0, 0, 10]},
@@ -1727,7 +1818,7 @@ const itemCatalog={
   {id:'phoenix_feather',name:'不死鳥の羽',rarity:4,effect:'HP0時30％でHP1に踏みとどまる（1戦闘1回）',bonus:[0, 0, 0, 0, 0, 0]},
   {id:'vampire_fang',name:'吸血鬼の牙',rarity:4,effect:'通常攻撃ダメージの20％をHP回復',bonus:[0, 0, 0, 0, 0, 0]},
   {id:'reflect_mirror',name:'反射の鏡',rarity:4,effect:'通常攻撃で受けたダメージの20％を反射',bonus:[0, 0, 0, 0, 0, 0]},
-  {id:'time_hourglass',name:'時の砂時計',rarity:4,effect:'20％で通常攻撃をもう1回（連鎖なし）',bonus:[0, 0, 0, 0, 0, 0]},
+  {id:'time_hourglass',name:'時の砂時計',rarity:4,effect:'行動の種類を問わず20％で通常攻撃を追加（連鎖なし）',bonus:[0, 0, 0, 0, 0, 0]},
   {id:'archmage_staff',name:'魔導王の杖',rarity:4,effect:'魔法ダメージ＋15％、消費MP＋20％',bonus:[0, 0, 0, 0, 0, 0]},
   {id:'divine_shield',name:'守護神の盾',rarity:4,effect:'HP30％以下で受けるダメージ20％軽減',bonus:[0, 0, 0, 0, 0, 0]},
   {id:'stardust_ring',name:'星屑の指輪',rarity:4,effect:'ターン終了時に最大HPの3％を回復（最低1）',bonus:[0, 0, 0, 0, 0, 0]},
@@ -1758,7 +1849,7 @@ function questItemDrop(difficulty,overrideDropRate=null){
  for(let i=0;i<weights.length;i++){roll-=weights[i];if(roll<0){rarity=i+1;break}}
  // 育成アイテムは★1のみ。★1では従来どおり育成70%／装備30%。
  const pool=rarity===1
-  ?(Math.random()<0.7?itemCatalog.training:itemCatalog.equipment.filter(x=>x.rarity===1))
+  ?(Math.random()<0.7?itemCatalog.training.filter(x=>x.rarity===1):itemCatalog.equipment.filter(x=>x.rarity===1))
   :itemCatalog.equipment.filter(x=>x.rarity===rarity);
  if(!pool.length)return '⚠️ アイテムの抽選対象が見つかりませんでした。';
  const item=pool[Math.floor(Math.random()*pool.length)];
@@ -1812,7 +1903,8 @@ function changeEquipment(monId,newId){
 const trainingItemBonuses={
  consomme_soup:[10,0,0,0,0,0],magic_soup:[0,10,0,0,0,0],
  power_apple:[0,0,5,0,0,0],guard_mushroom:[0,0,0,0,0,5],
- speed_fruit:[0,0,0,0,5,0],star_drop:[3,3,3,3,3,3]
+ speed_fruit:[0,0,0,0,5,0],star_drop:[3,3,3,3,3,3],
+ demon_flute:[0,0,0,0,0,0],mecha_heart:[0,0,0,0,0,0]
 };
 // Ver.4.3.14: 育成画面のアイテム欄（所持中かつ育成中のみ表示）
 function renderTrainingItems(){
@@ -1846,13 +1938,13 @@ function useTrainingItem(id){
  const inv=state.master.inventory;
  if(!Number.isSafeInteger(Number(inv[id]))||Number(inv[id])<1){alert('このアイテムを持っていません。');return}
  if(!confirm('第'+m.id+'号 '+m.name+'に「'+item.name+'」を使用しますか？\n'+item.effect+'\n※'+m.day+'日目はほかの育成アイテムを使えません。'))return;
- const before=[...m.stats],oldCount=inv[id],oldDay=m.trainingItemUsedDay,oldLogs=[...m.logs],oldComment=m.lastActionComment;
- m.stats=m.stats.map((v,i)=>v+bonus[i]);m.trainingItemUsedDay=m.day;inv[id]=Number(inv[id])-1;
- const result=keys.map((k,i)=>bonus[i]?k+'＋'+bonus[i]:null).filter(Boolean).join('／');
+ const before=[...m.stats],oldCount=inv[id],oldDay=m.trainingItemUsedDay,oldLogs=[...m.logs],oldComment=m.lastActionComment,oldEvolutionItems={...(m.trainingEvolutionItems||{})};
+ m.stats=m.stats.map((v,i)=>v+bonus[i]);if(id==='demon_flute'||id==='mecha_heart'){m.trainingEvolutionItems={...(m.trainingEvolutionItems||{}),[id]:true}}m.trainingItemUsedDay=m.day;inv[id]=Number(inv[id])-1;
+ const result=(id==='demon_flute'?'マジンの進化条件を解放':id==='mecha_heart'?'メカドラゴンの進化条件を解放':keys.map((k,i)=>bonus[i]?k+'＋'+bonus[i]:null).filter(Boolean).join('／'));
  m.logs.unshift(m.day+'日目：🎒 '+item.name+'を使用！ '+result);m.lastActionComment=m.logs[0];
  // 保存失敗時は消費・能力上昇を巻き戻す。
  try{state.current=m;localStorage.setItem(key,JSON.stringify(state))}
- catch(e){m.stats=before;m.trainingItemUsedDay=oldDay;m.logs=oldLogs;m.lastActionComment=oldComment;inv[id]=oldCount;alert('保存に失敗したため、アイテム使用を取り消しました。');return}
+ catch(e){m.stats=before;m.trainingEvolutionItems=oldEvolutionItems;m.trainingItemUsedDay=oldDay;m.logs=oldLogs;m.lastActionComment=oldComment;inv[id]=oldCount;alert('保存に失敗したため、アイテム使用を取り消しました。');return}
  render();renderMaster();alert(item.name+'を使った！ '+result);
 }
 let masterItemTab='training';
@@ -1895,7 +1987,7 @@ function renderMaster(){
 }
 // Ver.4.3.25 技屋さん：育成完了後の習得可能技のみ入れ替え。個体別累計変更回数で課金。
 function shopCost(mon){const n=Math.max(0,Math.floor(Number(mon.moveShopChanges)||0));return n===0?100:n===1?200:n===2?300:500}
-function shopEligible(mon){return (mon.availableMoves||[]).filter(id=>moveById(id)&&(!fourthMove(mon)||id!==fourthMove(mon).id))}
+function shopEligible(mon){const newer=['poison_attack','paralysis_attack','sleep_attack','x_attack'].filter(id=>{const mv=moveById(id);return mv&&mv.cond(mon.stats)});return [...new Set([...(mon.availableMoves||[]),...newer])].filter(id=>moveById(id)&&(!fourthMove(mon)||id!==fourthMove(mon).id))}
 function renderMoveShop(){
  const sel=$('move-shop-mon'),old=sel.value;sel.replaceChildren();
  for(const mon of state.roster){const o=document.createElement('option');o.value=String(mon.id);o.textContent=(mon.nickname||mon.name)+'（第'+mon.id+'号）';sel.appendChild(o)}
@@ -1940,11 +2032,11 @@ const shopTrainingPrices={consomme_soup:200,magic_soup:200,power_apple:300,guard
 let moveShopTab='moves';
 function renderShopItems(){
  const root=$('move-shop-items-pane');root.replaceChildren();
- const info=document.createElement('p');info.className='note';info.textContent='★1育成アイテムを購入できます。購入品はマスターの持ち物に入り、育成時に使用できます。';root.appendChild(info);
+ const info=document.createElement('p');info.className='note';info.textContent='育成アイテムを購入できます。購入品はマスターの持ち物に入り、育成時に使用できます。';root.appendChild(info);
  for(const item of itemCatalog.training){
   const price=shopTrainingPrices[item.id];if(!price)continue;
   const card=document.createElement('div');card.className='item-entry';card.style.padding='12px';
-  const title=document.createElement('strong');title.textContent='★1 '+item.name+' ／ '+price+'G';card.appendChild(title);
+  const title=document.createElement('strong');title.textContent='★'+item.rarity+' '+item.name+' ／ '+price+'G';card.appendChild(title);
   const desc=document.createElement('p');desc.className='note';desc.textContent=item.effect+' ／ 所持 ×'+Math.max(0,Math.floor(Number(state.master.inventory[item.id])||0));card.appendChild(desc);
   const row=document.createElement('div');row.className='row';row.style.gap='8px';
   const label=document.createElement('label');label.textContent='購入数 ';label.style.flex='1';
