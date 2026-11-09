@@ -157,7 +157,7 @@ main.registration-locked #open-quests,main.registration-locked #open-story{opaci
 <div class="row"><h2>⚔️ モンスターバトル <span class="badge" id="battle-version"></span></h2><button id="battle-emergency-abort" type="button" class="risk" hidden>🛑 クエスト中断</button><button id="battle-back" type="button">育成に戻る</button></div>
 <div id="battle-ui"></div></div></div><script>
 (()=>{'use strict';
-const APP_VERSION='Ver.4.3.43';
+const APP_VERSION='Ver.4.3.44';
 document.title='たまご育成 '+APP_VERSION;
 const $=id=>document.getElementById(id),keys=['HP','MP','力','賢さ','素早さ','防御'];
 $('main-version').textContent=APP_VERSION;$('battle-version').textContent=APP_VERSION;
@@ -417,8 +417,8 @@ if(name==='メタルぞんび')m.stats=metalStats(m.stats.reduce((a,b)=>a+b,0));
 save();render();requestAnimationFrame(()=>setTimeout(()=>$('moves-card').scrollIntoView({behavior:'smooth',block:'start'}),60))}
 
 const moveBook=[
-{id:'demon_form',name:'大魔神化',mp:30,desc:'2ターン力と素早さ2倍・自動通常攻撃'},
-{id:'demon_edict',name:'魔界の勅書',mp:35,desc:'敵全体に魔法攻撃＋20%でしびれ'},
+{id:'demon_form',name:'大魔神化',mp:30,desc:'2ターン力と素早さ2倍・自動通常攻撃',exclusive:'マジン'},
+{id:'demon_edict',name:'魔界の勅書',mp:35,desc:'敵全体に魔法攻撃＋20%でしびれ',exclusive:'魔界の遣唐使'},
 
 {id:'yawnall',name:'大あくび',mp:40,desc:'自分以外の敵味方全員を各45％で眠らせる',exclusive:'アクビ'},
 {id:'tinrandom',name:'不思議なぜんまい',mp:30,desc:'敵1匹に70％でランダムな状態異常',exclusive:'ブリキの人形'},
@@ -815,7 +815,7 @@ function restoreBattle(){
 }
 
 const moveById=id=>moveBook.find(v=>v.id===id);
-function mkF(mon,side,i){let st=migrateStats(side==='味方'&&Number(mon.id)>0?equippedStats(mon):[...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {equipmentId:side==='味方'&&Number(mon.id)>0?(mon.equipmentId||null):null,id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon'],'マジン':['demon_form'],'魔界の遣唐使':['demon_edict']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
+function mkF(mon,side,i){let st=migrateStats(side==='味方'&&Number(mon.id)>0?equippedStats(mon):[...mon.stats]);if(side==='味方'&&Number(mon.id)>0){const rate=growthRate(mon);if(rate)st=st.map(v=>Math.max(1,Math.round(v*(1+rate))))}return {equipmentId:side==='味方'&&Number(mon.id)>0?(mon.equipmentId||null):null,id:mon.id,name:mon.nickname||mon.name,speciesName:mon.speciesName||mon.name,stats:st,hp:Math.max(1,st[0]),mp:Math.max(0,st[1]),maxHp:Math.max(1,st[0]),maxMp:Math.max(0,st[1]),moves:[...new Set([...(mon.moves||[]).filter(id=>{const v=moveById(id);return !v?.exclusive||v.exclusive===(mon.speciesName||mon.name)}),...({'鋼の巨獣':['steel'],'風の幻獣':['wind'],'星の精霊':['spirit'],'生命の守護者':['guardian'],'虹の奇獣':['rainbow'],'魔王の使い':['judgement'],'双刃の獣':['twinblade'],'不滅の巨人':['immortal'],'アクビ':['yawnall'],'ブリキの人形':['tinrandom'],'女王蜂':['beesummon'],'マジン':['demon_form'],'魔界の遣唐使':['demon_edict']}[mon.speciesName||mon.name]||[])])].filter(id=>moveById(id)),side,i,type:mon.type??i,defBuff:0,atkDebuff:0,reflect:0,cover:false,counter:false,shield:false,stun:false,status:null,beesLeft:0,trainBoost:0,revivedOnce:false,boss:!!mon.boss,bossEmoji:mon.bossEmoji||null,bossStage:mon.bossStage||0}}
 
 function initRareBattle(party,enemyMons){
  let candidates=[...branches.flat().map(x=>x[0]),...extraEvo.map(x=>x.name),...Object.keys(rareSpecs).filter(x=>x!=='カオスエッグ')];
@@ -2051,7 +2051,7 @@ function renderMaster(){
 }
 // Ver.4.3.25 技屋さん：育成完了後の習得可能技のみ入れ替え。個体別累計変更回数で課金。
 function shopCost(mon){const n=Math.max(0,Math.floor(Number(mon.moveShopChanges)||0));return n===0?100:n===1?200:n===2?300:500}
-function shopEligible(mon){const newer=['poison_attack','paralysis_attack','sleep_attack','x_attack'].filter(id=>{const mv=moveById(id);return mv&&mv.cond(mon.stats)});return [...new Set([...(mon.availableMoves||[]),...newer])].filter(id=>moveById(id)&&(!fourthMove(mon)||id!==fourthMove(mon).id))}
+function shopEligible(mon){const newer=['poison_attack','paralysis_attack','sleep_attack','x_attack'].filter(id=>{const mv=moveById(id);return mv&&mv.cond(mon.stats)});return [...new Set([...(mon.availableMoves||[]),...newer])].filter(id=>{const v=moveById(id);return v&&(!v.exclusive||v.exclusive===mon.name)&&(!fourthMove(mon)||id!==fourthMove(mon).id)})}
 function renderMoveShop(){
  const sel=$('move-shop-mon'),old=sel.value;sel.replaceChildren();
  for(const mon of state.roster){const o=document.createElement('option');o.value=String(mon.id);o.textContent=(mon.nickname||mon.name)+'（第'+mon.id+'号）';sel.appendChild(o)}
